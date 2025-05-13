@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        const date = new Date();
+        document.title = date.getFullYear() + "년도 엘로힘 청년부 관리사이트";
+    </script>
+    <link rel="stylesheet" type="text/css" href="/mainPage.css">
+</head>
+<body>
+    <h4>메인 페이지</h4>
+    <h5 th:text="${username}">님 안녕하세요.</h5>
+    <a href="/process/logout">로그아웃</a> <br>
+    <a href="/user/attendancePage">출석부</a> <br>
+</body>
+</html>
