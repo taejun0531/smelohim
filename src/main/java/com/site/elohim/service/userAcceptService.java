@@ -44,7 +44,7 @@ public class userAcceptService {
     }
 
     @Transactional
-    public boolean updateUser(String Id, String userRole){
+    public boolean updateUser(String Id, String userRole, String leaderId) {
         Long LongId = Long.parseLong(Id);
 
         if(usersRepository.findById(LongId).isEmpty())
@@ -52,6 +52,12 @@ public class userAcceptService {
 
         Users user = usersRepository.findById(LongId).get();
         user.setUserRole(userRole);
+
+        if(leaderId == null || leaderId.isEmpty())
+            user.setMemberId(null);
+        else
+            user.setMemberId(Long.parseLong(leaderId));
+
         return true;
     }
 

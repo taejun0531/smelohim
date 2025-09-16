@@ -42,10 +42,11 @@ public class userAcceptController {
     @PostMapping("/admin/accept_user")
     @ResponseBody
     public boolean acceptUser(@RequestBody Map<String, String> data) {
-        String userKey = data.get("chage_userKey");
-        String userRole = data.get("chage_userRole");
+        String id = data.get("id");
+        String userRole = data.get("userRole");
+        String leaderId = data.get("leaderId");
 
-        return service.updateUser(userKey, userRole);
+        return service.updateUser(id, userRole, leaderId);
     }
 
     @PostMapping("/admin/getCellLeaderInfo")

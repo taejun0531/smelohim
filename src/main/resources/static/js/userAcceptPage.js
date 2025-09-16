@@ -4,7 +4,7 @@
 
 const API_URL_ACCEPT = "/admin/accept_user";
 const API_URL_LEADERS = "/admin/getCellLeaderInfo";
-const API_URL_DELETE = "/admin/delete_user"; // ← 서버에 맞게 필요 시 수정
+const API_URL_DELETE = "/admin/delete_user";
 
 let secAwait = null, secAdmin = null, secLeader = null;
 let cellLeaderListCache = null;
@@ -59,7 +59,7 @@ async function postChangeRole(userId, userRole, extra={}){
     try{
         const res = await fetch(API_URL_ACCEPT, {
             method:"POST", headers:{ "Content-Type":"application/json" },
-            body: JSON.stringify({ userId:String(userId), userRole:userRole, ...extra })
+            body: JSON.stringify({ id:String(userId), userRole:userRole, ...extra })
         });
         return await res.json();
     }catch(e){ console.error(e); return false; }
