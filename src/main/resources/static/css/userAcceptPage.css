@@ -1,0 +1,334 @@
+/* === User Accept Page (Fresh & Clean Green) =============================== */
+
+/* 전역 트랜지션 (배경 그라데이션은 레이어 opacity로 처리) */
+@media (prefers-reduced-motion: no-preference){
+    html, body, body *{
+        transition:
+                color .45s ease,
+                background-color .45s ease,
+                border-color .45s ease,
+                box-shadow .45s ease;
+    }
+}
+/* themeToggle.js가 붙이는 페이드시 더 부드럽게 */
+body.theme-fade *{ transition-duration:.55s; }
+
+/* 팔레트 — 라이트 */
+:root{
+    --bg:#f4fff7;
+    --card:#ffffff;
+    --text:#0a1b13;
+    --subtle:#3d6a5a;
+    --muted:#2e5547;
+    --placeholder:#6f8b80;
+    --border:#cfeee0;
+
+    --brand:#22c55e;
+    --brand-dark:#16a34a;
+    --ring:34 197 94;
+
+    --radius:16px;
+    --shadow:0 10px 22px rgba(16,185,129,.12), 0 2px 6px rgba(2,44,34,.06);
+}
+
+/* 팔레트 — 다크(가독성↑) */
+body.dark{
+    --bg:#08110e;
+    --card:#0f201a;
+    --text:#ecfff6;
+    --subtle:#b3ead7;
+    --muted:#c9f1e0;
+    --placeholder:#97ceb9;
+    --border:#25473c;
+
+    --brand:#29d36a;
+    --brand-dark:#19b95c;
+
+    --shadow:0 12px 26px rgba(0,0,0,.55), 0 2px 8px rgba(0,0,0,.35);
+}
+
+/* 베이스 + 배경 그라데이션 두 겹(크로스페이드) */
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+    margin:0; color:var(--text); background-color:var(--bg);
+    font-family:"Noto Sans KR", system-ui, -apple-system, Segoe UI, Roboto, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    line-height:1.55; padding:18px 16px 60px;
+    display:flex; flex-direction:column; align-items:center;
+    position:relative; overflow-x:hidden;
+}
+body::before, body::after{
+    content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+    will-change:opacity; transition:opacity .45s ease;
+}
+/* 라이트 레이어 */
+body::before{
+    background:
+            radial-gradient(1000px 600px at 100% -10%, rgba(34,197,94,.06), transparent 60%),
+            radial-gradient(900px 520px at -10% 110%, rgba(16,185,129,.05), transparent 60%);
+    opacity:1;
+}
+/* 다크 레이어 */
+body::after{
+    background:
+            radial-gradient(1000px 600px at 100% -10%, rgba(41,211,106,.22), transparent 60%),
+            radial-gradient(900px 520px at -10% 110%, rgba(20,120,85,.24), transparent 60%);
+    opacity:0;
+}
+body.dark::before{ opacity:0; }
+body.dark::after{ opacity:1; }
+
+/* ===== Topbar ============================================================ */
+.topbar{
+    width:min(1100px,96vw);
+    margin:0 auto 6px;
+    display:flex; align-items:center; justify-content:space-between;
+}
+.brand{
+    display:inline-flex; align-items:center;
+    padding:6px 10px; font-weight:900; font-size:14px; letter-spacing:.2px;
+    color:var(--brand-dark);
+    background:linear-gradient(180deg,#f0fff7,#ffffff);
+    border:1px solid var(--border); border-radius:999px;
+    box-shadow:0 4px 10px rgba(16,185,129,.10);
+}
+.moveMainPageText{
+    text-decoration:none; font-weight:800; font-size:13px; margin-right:8px;
+    color:#0a1b13; background:#bdf4d3; border:1px solid #9fecc4; border-radius:999px;
+    padding:6px 10px; box-shadow:0 3px 8px rgba(16,185,129,.12);
+}
+body.dark .moveMainPageText{ color:#08110e; }
+.theme-toggle{
+    padding:6px 10px; border:none; border-radius:999px; cursor:pointer;
+    font-weight:900; font-size:13px; color:#0a1b13; background:#bdf4d3;
+    box-shadow:0 4px 10px rgba(var(--ring), .18);
+}
+body.dark .theme-toggle{ color:#08110e; background:#9cf0c3; }
+
+/* ===== 페이지 헤더 ======================================================= */
+.page-header{
+    width:min(1100px,96vw);
+    margin:2px auto 10px;
+}
+.page-header h1{ margin:0; font-size:22px; font-weight:900; letter-spacing:.2px; }
+.page-header p{ margin:4px 0 0; color:var(--subtle); font-size:13px; }
+
+/* ===== 카드 & 레이아웃 ==================================================== */
+.card{
+    width:min(1100px,96vw);
+    background:var(--card); border:1px solid var(--border);
+    border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:12px; margin:10px auto;
+}
+
+/* 하단 2단 그리드: 관리자 / 셀리더 반반 & 같은 높이 */
+.grid-2{
+    width:min(1100px,96vw);
+    display:grid; gap:16px;
+    grid-template-columns:1fr 1fr;           /* ✅ 반반 */
+    align-items:stretch;                     /* ✅ 같은 높이 */
+    margin:10px auto;
+}
+.grid-2 .card{
+    width:100%;
+    height:100%;                             /* ✅ 셀 높이 채우기 */
+    display:flex; flex-direction:column;
+}
+
+/* ===== 테이블 ============================================================= */
+.card table{
+    width:100%; border-collapse:separate; border-spacing:0;
+    border:1px solid var(--border); border-radius:12px; overflow:hidden;
+}
+.card thead th{
+    text-align:left; padding:10px 12px;
+    background:linear-gradient(180deg,#f7fff9,#ffffff);
+    border-bottom:1px solid var(--border);
+    font-weight:900; color:var(--text);
+}
+body.dark .card thead th{ background:linear-gradient(180deg,#0e221b,#10241d); color:#f4fff9; }
+.card tbody td{
+    padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:middle;
+}
+.card tbody tr:nth-child(even) td{ background:rgba(34,197,94,.03); }
+.card tbody tr:hover td{ background:rgba(34,197,94,.08); }
+body.dark .card tbody tr:nth-child(even) td{ background:rgba(41,211,106,.10); }
+
+/* 표 제목(h3) + 카운트 */
+.card > h3{
+    margin:0 0 8px; font-size:16px; font-weight:900; display:flex; gap:8px; align-items:center;
+}
+.card > h3 span{
+    font-size:12px; font-weight:800; color:var(--brand-dark);
+    background:rgba(34,197,94,.12); border:1px solid var(--border);
+    border-radius:999px; padding:2px 8px;
+}
+
+/* 권한 Pill 버튼 (span) */
+.role-btn{
+    display:inline-block; margin-right:6px;
+    padding:6px 10px; font-size:13px; font-weight:800; user-select:none;
+    border-radius:999px; border:1px solid var(--border);
+    background:#fff; color:var(--brand-dark); cursor:pointer;
+}
+body.dark .role-btn{ background:#0f201a; }
+.role-btn.active{
+    color:#fff; border-color:transparent;
+    background:linear-gradient(180deg,var(--brand),var(--brand-dark));
+    box-shadow:0 6px 14px rgba(var(--ring), .26);
+}
+
+/* ===== 삭제 버튼 (수정 버튼 제거하고 대체) ================================ */
+.btn-delete{
+    padding:6px 12px;
+    border-radius:999px;
+    border:1px solid #fecaca;              /* 라이트 테두리 */
+    background:linear-gradient(180deg,#ef4444,#dc2626);
+    color:#fff; font-weight:900; cursor:pointer;
+    box-shadow:0 6px 14px rgba(239,68,68,.25);
+}
+.btn-delete:hover{ filter:brightness(1.05); }
+.btn-delete:active{ transform:translateY(1px); }
+body.dark .btn-delete{
+    border-color:#7f1d1d;
+    box-shadow:0 6px 14px rgba(0,0,0,.45);
+}
+
+/* 반응형 */
+@media (max-width: 900px){
+    .grid-2{ grid-template-columns:1fr; } /* 세로 스택 */
+}
+
+/* === [추가] 셀리더 선택 팝오버 =========================================== */
+/* ===== Leader Popover — Solid Card Style ================================== */
+.leader-popover{
+    position:absolute; z-index:1000;
+    min-width: 200px; max-width: 280px; max-height: 300px;
+    overflow-y:auto; overscroll-behavior:contain;
+
+    /* 완전 불투명 카드 */
+    background: var(--card);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:14px;
+    box-shadow:
+            0 14px 28px rgba(16,185,129,.20),
+            0 6px 14px rgba(2,44,34,.10);
+    padding:8px;
+
+    animation: leader-popover-in .18s ease-out;
+}
+
+/* 말풍선 화살표 */
+.leader-popover::before{
+    content:""; position:absolute; top:-7px; left:18px;
+    width:12px; height:12px; transform:rotate(45deg);
+    background:var(--card);
+    border-left:1px solid var(--border);
+    border-top:1px solid var(--border);
+    box-shadow:-2px -2px 6px rgba(0,0,0,.06);
+}
+
+/* 리스트 */
+.leader-popover__list{
+    margin:0; padding:4px;
+    list-style:none;
+    display:flex; flex-direction:column; gap:6px;
+}
+
+/* 항목(버튼처럼) */
+.leader-popover__item{
+    display:block;
+    padding:10px 12px;
+    font-size:14px; font-weight:800; line-height:1.2;
+    color:var(--text);
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:10px;
+    text-align:center;
+    cursor:pointer;
+    user-select:none;
+
+    transition:
+            background-color .22s ease,
+            color .22s ease,
+            border-color .22s ease,
+            box-shadow .22s ease,
+            transform .18s ease;
+}
+
+/* Hover / Focus */
+.leader-popover__item:hover,
+.leader-popover__item:focus{
+    outline:none;
+    background: #e6f9ed;
+    border-color: var(--brand);
+    color: var(--brand-dark);
+    box-shadow: 0 8px 18px rgba(var(--ring), .25);
+    transform: translateY(-1px);
+}
+
+/* Focus ring (키보드 접근성) */
+.leader-popover__item:focus-visible{
+    box-shadow: 0 0 0 3px rgba(var(--ring), .3), 0 6px 14px rgba(var(--ring), .18);
+}
+
+/* 다크 모드 톤 */
+body.dark .leader-popover{
+    background: var(--card);
+    box-shadow:
+            0 16px 32px rgba(0,0,0,.55),
+            0 6px 14px rgba(0,0,0,.35);
+}
+body.dark .leader-popover::before{
+    background:var(--card);
+    border-color:var(--border);
+}
+body.dark .leader-popover__item{
+    background:#152822;
+    border-color: var(--border);
+    color:var(--text);
+}
+body.dark .leader-popover__item:hover,
+body.dark .leader-popover__item:focus{
+    background:#1e3b30;
+    border-color: var(--brand);
+    color:#ecfff6;
+    box-shadow: 0 10px 20px rgba(0,0,0,.45);
+}
+
+/* 스크롤바 */
+.leader-popover::-webkit-scrollbar{ width:10px; }
+.leader-popover::-webkit-scrollbar-thumb{
+    background: rgba(0,0,0,.25);
+    border-radius:10px; border:2px solid transparent; background-clip:content-box;
+}
+body.dark .leader-popover::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.25); }
+
+/* 등장 애니메이션 */
+@keyframes leader-popover-in{
+    from{ opacity:0; transform:translateY(-4px) scale(.98); }
+    to  { opacity:1; transform:translateY(0) scale(1); }
+}
+
+/* === 활성(role) Pill 비클릭 처리 & 시각적 상태 고정 ======================= */
+/* 이미 활성화된 권한 Pill 은 클릭/호버/포커스 모두 무시 */
+.role-btn.active {
+    color: #fff;
+    border-color: transparent;
+    background: linear-gradient(180deg, var(--brand), var(--brand-dark));
+    box-shadow: 0 6px 14px rgba(var(--ring), .26);
+
+    /* ✅ 클릭 방지만 하고 색상은 그대로 */
+    pointer-events: none;
+    cursor: default;
+}
+
+/* 활성 상태에선 효과 제거 (튀는 호버/포커스 금지) */
+.role-btn.active:hover,
+.role-btn.active:focus,
+.role-btn.active:focus-visible{
+    transform: none;
+    box-shadow: none;
+    outline: none;
+}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" type="text/css" href="/css/mainPage.css">
+    <script type="text/javascript" src="/js/themeToggle.js" defer></script>
+</head>
+<body>
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="brand">엘로힘 청년부</div>
+        <button id="toggleTheme" class="theme-toggle" aria-pressed="false">🌙 다크모드</button>
+    </div>
+
+    <!-- Greeting + Logout -->
+    <div class="header-row">
+        <div class="greeting">메인 페이지 · <span class="mono">리더</span> 모드 <span th:text="${username}"></span></div>
+        <a class="logout" href="/process/logout">로그아웃</a>
+    </div>
+
+    <!-- Cards (리더는 출석부만 노출) -->
+    <div class="grid">
+        <div class="card">
+            <h3>출석부</h3>
+            <p>담당 셀 출석 체크와 지난 주 기록 확인.</p>
+            <a href="/user/attendancePage">이동하기</a>
+        </div>
+    </div>
+</body>
+</html>

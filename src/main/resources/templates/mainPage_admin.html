@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" type="text/css" href="/css/mainPage.css">
+    <script type="text/javascript" src="/js/themeToggle.js" defer></script>
+</head>
+<body>
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="brand">엘로힘 청년부</div>
+        <button id="toggleTheme" class="theme-toggle" aria-pressed="false">🌙 다크모드</button>
+    </div>
+
+    <!-- Greeting + Logout -->
+    <div class="header-row">
+        <div class="greeting">메인 페이지 · <span class="mono">임원</span> 모드</div>
+        <a class="logout" href="/process/logout">로그아웃</a>
+    </div>
+
+    <!-- Cards -->
+    <div class="grid">
+        <div class="card">
+            <h3>회원가입 승인</h3>
+            <p>새로 가입한 청년들의 가입 요청을 확인하고 승인하세요.</p>
+            <a href="/admin/userAcceptPage">이동하기</a>
+        </div>
+
+        <div class="card">
+            <h3>인적사항 관리</h3>
+            <p>청년부 인적 정보 조회·수정 및 검색.</p>
+            <a href="/admin/parsonalDataPage">이동하기</a>
+        </div>
+
+        <div class="card">
+            <h3>출석부</h3>
+            <p>주차별 출석 체크 및 히스토리 조회.</p>
+            <a href="/user/attendancePage">이동하기</a>
+        </div>
+
+        <div class="card">
+            <h3>수련회 장소</h3>
+            <p>수련회 장소 후보 비교 및 확정.</p>
+            <a href="/admin/placePage">이동하기</a>
+        </div>
+    </div>
+</body>
+</html>

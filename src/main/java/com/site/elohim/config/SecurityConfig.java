@@ -7,6 +7,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity // Security Filter를 등록
@@ -24,29 +26,38 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/process/**", "/", "/loginpage", "/createaccountpage", "/parsonalDataPage", "/error").permitAll()
+                        .requestMatchers("/process/**", "/", "/loginpage", "/createAccountPage", "/error/**", "/js/**", "/css/**").permitAll()
                         .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/loginpage")
+                        .loginPage("/loginPage")
                         .loginProcessingUrl("/process/login")
-                        .defaultSuccessUrl("/")
                         .usernameParameter("userId")
                         .passwordParameter("userPassword")
+                        .successHandler(successHandler())
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/process/logout")
                         .logoutSuccessUrl("/")
                         .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
                 )
                 .sessionManagement(session -> session
+                        .sessionFixation().changeSessionId()
                         .maximumSessions(1)
-                        .maxSessionsPreventsLogin(true)
+                        .maxSessionsPreventsLogin(false)
                 );
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler successHandler() {
+        SimpleUrlAuthenticationSuccessHandler handler = new SimpleUrlAuthenticationSuccessHandler();
+        handler.setUseReferer(true); // 리퍼러 사용 설정
+        return handler;
     }
 }

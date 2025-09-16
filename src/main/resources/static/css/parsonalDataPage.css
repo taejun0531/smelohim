@@ -1,0 +1,246 @@
+/* ==== Elohim Youth · Personal Data (Fresh & Clean Green) ================= */
+
+/* 전역 트랜지션: 색/테두리/그림자에만 적용(배경 레이어는 아래에서 opacity로 크로스페이드) */
+@media (prefers-reduced-motion: no-preference){
+    html, body, body *{
+        transition:
+                color .45s ease,
+                border-color .45s ease,
+                box-shadow .45s ease,
+                outline-color .45s ease,
+                background-color .45s ease;
+    }
+}
+
+/* 토글 직후 조금 더 부드럽게 보이도록 */
+body.theme-fade * { transition-duration: .45s; }
+
+/* 팔레트(라이트) */
+:root{
+    --bg:#f4fff7;
+    --card:#ffffff;
+    --text:#0b1b14;
+    --muted:#2e5547;
+    --subtle:#3d6a5a;
+    --placeholder:#6f8b80;
+    --border:#cfeee0;
+
+    --brand:#22c55e;      /* emerald-500 */
+    --brand-dark:#16a34a; /* emerald-600 */
+    --brand-weak:#eafff1;
+    --ring:34 197 94;
+
+    --radius:16px;
+    --shadow:0 10px 22px rgba(16,185,129,.10), 0 2px 6px rgba(2,44,34,.05);
+}
+
+/* 팔레트(다크) — 가독성 강화 */
+body.dark{
+    --bg:#08110e;
+    --card:#0f201a;
+    --text:#edfff7;       /* 본문 밝게 */
+    --muted:#c9f1e0;
+    --subtle:#b3ead7;
+    --placeholder:#97ceb9;
+    --border:#25473c;
+
+    --brand:#29d36a;
+    --brand-dark:#19b95c;
+    --brand-weak:rgba(41,211,106,.18);
+}
+
+/* Base */
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+    margin:0; color:var(--text);
+    background-color: var(--bg);            /* 배경색은 색상만 */
+    font-family:"Noto Sans KR", system-ui, -apple-system, Segoe UI, Roboto, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    line-height:1.55;
+    padding:18px 16px 60px;
+    position: relative;
+    overflow-x: hidden;
+    transition: background-color .25s ease, color .25s ease;
+}
+
+/* === 배경 그라데이션: 라이트/다크 두 겹을 opacity로 '크로스페이드' ================== */
+body::before,
+body::after{
+    content:"";
+    position:fixed; inset:0; z-index:-1; pointer-events:none;
+    will-change: opacity;
+    transition: opacity .45s ease;
+}
+/* 라이트 배경 레이어 */
+body::before{
+    background:
+            radial-gradient(1000px 600px at 100% -10%, rgba(34,197,94,.06), transparent 60%),
+            radial-gradient(900px 520px at -10% 110%, rgba(16,185,129,.05), transparent 60%);
+    opacity: 1;
+}
+/* 다크 배경 레이어 */
+body::after{
+    background:
+            radial-gradient(1000px 600px at 100% -10%, rgba(41,211,106,.22), transparent 60%),
+            radial-gradient(900px 520px at -10% 110%, rgba(20,120,85,.24), transparent 60%);
+    opacity: 0;
+}
+/* 다크모드일 때 두 레이어의 투명도를 교차 */
+body.dark::before{ opacity: 0; }
+body.dark::after{ opacity: 1; }
+
+/* ===== Topbar ============================================================ */
+.topbar{
+    width:min(1080px,96vw);
+    margin:0 auto 8px;
+    display:flex; align-items:center; justify-content:space-between;
+}
+.brand{
+    display:inline-flex; align-items:center;
+    padding:6px 10px; font-weight:900; font-size:14px; letter-spacing:.2px;
+    color:var(--brand-dark);
+    background:linear-gradient(180deg,#f0fff7,#ffffff);
+    border:1px solid var(--border); border-radius:999px;
+    box-shadow:0 4px 10px rgba(16,185,129,.10);
+}
+body.dark .brand{
+    color:#e6fff2; background:linear-gradient(180deg,rgba(23,46,38,.88),rgba(18,36,30,.88));
+}
+.theme-toggle{
+    padding:6px 10px; border:none; border-radius:999px; cursor:pointer;
+    font-weight:900; font-size:13px; color:#0a1b13; background:#bdf4d3;
+    box-shadow:0 4px 10px rgba(var(--ring), .18);
+}
+body.dark .theme-toggle{ color:#08110e; background:#9cf0c3; }
+
+/* ===== 상단 좁게/깔끔 ==================================================== */
+.parsonalDataPage_top{
+    width:min(1080px,96vw);
+    margin:6px auto 4px;
+    display:grid; grid-template-columns: 1fr auto auto; gap:8px; align-items:center;
+}
+.parsonalDataText{
+    margin:0; font-size:15px; font-weight:900; color:var(--brand-dark);
+    background:linear-gradient(180deg,#eafff1,#fff);
+    border:1px solid var(--border); border-radius:999px;
+    padding:5px 10px; box-shadow:0 3px 8px rgba(16,185,129,.10);
+}
+.userNameText{
+    margin:0; font-size:13px; color:var(--subtle); font-weight:700; opacity:.95;
+}
+.moveMainPageText{
+    justify-self:end;
+    text-decoration:none; color:#0a1b13; font-weight:800; font-size:13px;
+    background:#bdf4d3; border:1px solid #9fecc4; border-radius:999px;
+    padding:6px 10px; box-shadow:0 3px 8px rgba(16,185,129,.12);
+}
+.moveMainPageText:hover{ filter:brightness(1.04); }
+body.dark .moveMainPageText{ color:#08110e; }
+
+/* ===== 테이블: 카드 스타일 ============================================== */
+table{
+    width:min(1080px,96vw);
+    margin:12px auto;
+    border-collapse:separate; border-spacing:0;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+}
+
+/* 헤더 */
+table tr:first-child th{
+    background:linear-gradient(180deg,#f7fff9,#ffffff);
+    color:var(--text); font-weight:900; letter-spacing:.2px;
+    padding:10px 12px; text-align:left;
+    border-bottom:1px solid var(--border);
+}
+body.dark table tr:first-child th{
+    background:linear-gradient(180deg,#0e221b,#10241d);
+    color:#f4fff9;
+}
+
+/* 필터 테이블(첫 번째) 셀/컨트롤 */
+table:first-of-type td{
+    padding:10px 12px; vertical-align:middle; border-bottom:1px solid var(--border);
+}
+table:first-of-type input[type="text"],
+table:first-of-type input[type="number"],
+table:first-of-type select{
+    width:100%; height:36px; padding:6px 10px;
+    border:1px solid var(--border); border-radius:10px;
+    background:#fff; color:var(--text); outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+body.dark table:first-of-type input[type="text"],
+body.dark table:first-of-type input[type="number"],
+body.dark table:first-of-type select{
+    background:#122821; color:#edfff7;
+    border-color:#2a4a3e;
+}
+table:first-of-type input::placeholder{ color:var(--placeholder); opacity:.8; }
+body.dark table:first-of-type input::placeholder{ color:#a4dfcd; opacity:.95; }
+table:first-of-type input:focus,
+table:first-of-type select:focus{
+    border-color:rgba(var(--ring), .55);
+    box-shadow:0 0 0 4px rgba(var(--ring), .20);
+}
+#searchBtn{
+    width:100%; height:36px; border:none; border-radius:999px;
+    background:linear-gradient(180deg,var(--brand),var(--brand-dark)); color:#fff; font-weight:900;
+    box-shadow:0 8px 18px rgba(var(--ring), .26); cursor:pointer;
+    transition:filter .15s ease;
+}
+#searchBtn:hover{ filter:brightness(1.05); }
+
+/* 총원 라벨: 컴팩트 칩 */
+#memberTotalSize{
+    display:block; width:min(1080px,96vw); margin:8px auto 2px;
+    font-size:12px; font-weight:800; color:var(--subtle);
+    background:var(--brand-weak); border:1px solid var(--border);
+    border-radius:999px; padding:5px 10px; text-align:left;
+}
+
+/* 결과 테이블(두 번째) */
+table:nth-of-type(2) tr th,
+table:nth-of-type(2) tr td{
+    padding:10px 12px; border-bottom:1px solid var(--border);
+    color:var(--text);
+}
+table:nth-of-type(2) tr:nth-child(even) td{ background:rgba(34,197,94,.03); }
+table:nth-of-type(2) tr:hover td{ background:rgba(34,197,94,.08); }
+body.dark table:nth-of-type(2) tr:nth-child(even) td{ background:rgba(41,211,106,.10); }
+
+/* 정렬 가능한 헤더: 포인터/아이콘 공간 */
+table:nth-of-type(2) tr th[onclick]{
+    user-select:none; cursor:pointer; position:relative;
+    padding-right:22px; transition:color .15s ease;
+}
+table:nth-of-type(2) tr th[onclick]:hover{ color:var(--brand-dark); }
+
+/* 정렬 방향 아이콘(▲/▼) */
+table:nth-of-type(2) tr th[onclick].sorted::after{
+    content: attr(data-sort);
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    font-size:12px; color:var(--brand-dark);
+}
+table:nth-of-type(2) tr th[onclick][data-sort="asc"].sorted::after{ content:"▲"; }
+table:nth-of-type(2) tr th[onclick][data-sort="desc"].sorted::after{ content:"▼"; }
+
+/* 팝업 가능한 이름 셀 힌트 */
+#memberTable td[onclick^="memberPopup"]{
+    cursor:pointer; text-decoration:underline dotted; font-weight:700;
+}
+#memberTable td[onclick^="memberPopup"]:hover{
+    text-decoration:underline; color:var(--brand-dark);
+}
+
+/* 반응형 */
+@media (max-width: 920px){
+    table{ display:block; overflow-x:auto; white-space:nowrap; }
+    .parsonalDataPage_top{
+        grid-template-columns: 1fr; gap:6px;
+    }
+    .moveMainPageText{ justify-self:start; }
+}

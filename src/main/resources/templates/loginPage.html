@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+    <link rel="stylesheet" type="text/css" href="/css/loginPage.css">
+    <script type="text/javascript" src="/js/themeToggle.js" defer></script>
+</head>
+<body>
+    <!-- 상단: 브랜드 + 테마 토글 -->
+    <div class="topbar">
+        <div class="smelohim_label">
+            <p class="smelohim_label_p">엘로힘 청년부</p>
+        </div>
+        <button id="toggleTheme" class="theme-toggle" aria-pressed="false">🌙 다크모드</button>
+    </div>
+
+    <div class="login_warp">
+        <p class="login_warp_p">로그인</p>
+        <div class="card_divider"></div>
+
+        <form class="login_form" method="POST" action="/process/login">
+            <div class="login_list_box">
+                <div class="login_id_box">
+                    <label for="loginId">아이디</label>
+                    <input id="loginId" class="input_login_id" type="text" name="userId" placeholder="아이디를 입력하세요" autocomplete="username" />
+                </div>
+                <div class="login_password_box">
+                    <label for="loginPw">비밀번호</label>
+                    <input id="loginPw" class="input_login_password" type="password" name="userPassword" placeholder="비밀번호를 입력하세요" autocomplete="current-password" />
+                </div>
+            </div>
+
+            <div class="login_submit_box">
+                <input class="input_login" type="submit" value="로그인" name="login"/>
+            </div>
+        </form>
+    </div>
+
+    <ul class="find_wrap" id="find_wrap">
+        <li>
+            <a class="find_text" href="/createAccountPage">회원가입</a>
+        </li>
+    </ul>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>청년 세부사항</title>
+    <link rel="stylesheet" href="/css/memberDetailsPage.css">
+    <script src="/js/themeToggle.js" defer></script>
+    <script src="/js/memberDetailsPage.js" defer></script>
+</head>
+<body>
+<!-- Topbar -->
+<div class="topbar">
+    <div class="brand">엘로힘 청년부</div>
+    <button id="toggleTheme" class="theme-toggle" aria-pressed="false">🌙 다크모드</button>
+</div>
+
+<!-- 헤더 행 -->
+<div class="header-row">
+    <div class="title">
+        <span class="dot"></span>
+        <h1>청년 세부사항</h1>
+        <span class="badge">읽기 모드</span>
+    </div>
+    <div class="actions">
+        <button id="editBtn" class="btn secondary">✏️ 수정</button>
+        <button id="deleteBtn" class="btn danger">🗑️ 삭제</button>
+    </div>
+</div>
+
+<!-- 카드 -->
+<div class="card">
+    <div class="card-accent"></div>
+
+    <form id="memberForm" class="form" method="post" action="/admin/updateMember">
+        <input type="hidden" name="id" th:value="${member.id}"/>
+
+        <!-- 기본 정보 -->
+        <section class="section">
+            <h2>기본 정보</h2>
+            <div class="grid">
+                <label class="field">
+                    <span>이름</span>
+                    <input type="text" name="memberName" class="input" th:value="${member.memberName}" disabled>
+                </label>
+                <label class="field">
+                    <span>생일</span>
+                    <input type="text" name="memberBirth" class="input" th:value="${member.memberBirth}" placeholder="YYYY-MM-DD" disabled>
+                </label>
+                <label class="field">
+                    <span>핸드폰 번호</span>
+                    <input type="text" name="memberPhoneNumber" class="input" th:value="${member.memberPhoneNumber}" placeholder="010-0000-0000" disabled>
+                </label>
+                <label class="field field-wide">
+                    <span>주소</span>
+                    <input type="text" name="memberAddress" class="input" th:value="${member.memberAddress}" disabled>
+                </label>
+            </div>
+        </section>
+
+        <!-- 신앙/참석 상태 -->
+        <section class="section">
+            <h2>신앙 · 참석</h2>
+            <div class="grid">
+                <!-- 세례 여부: 읽기=텍스트, 수정=셀렉트(value는 ""/입교/세례/유아세례/학습) -->
+                <label class="field">
+                    <span>세례 여부</span>
+                    <div class="stack">
+                        <div class="read-only" id="baptismText" th:text="${member.baptismStatus}">-</div>
+                        <select name="baptismStatus" id="baptismSelect" class="input hidden" disabled>
+                            <option value=""></option>
+                            <option value="입교">입교</option>
+                            <option value="세례">세례</option>
+                            <option value="유아세례">유아세례</option>
+                            <option value="학습">학습</option>
+                        </select>
+                    </div>
+                </label>
+
+                <!-- 예배/셀모임: 텍스트 + ‘갱신하기’ 버튼 -->
+                <label class="field">
+                    <span>예배 빈도</span>
+                    <div class="inline">
+                        <div class="read-only" th:text="${member.worshipStatus}">-</div>
+                        <button id="refreshWorshipBtn" type="button" class="btn chip">갱신하기</button>
+                    </div>
+                </label>
+
+                <label class="field">
+                    <span>셀모임 빈도</span>
+                    <div class="inline">
+                        <div class="read-only" th:text="${member.cellStatus}">-</div>
+                        <button id="refreshCellBtn" type="button" class="btn chip">갱신하기</button>
+                    </div>
+                </label>
+
+                <!-- 리더 여부 -->
+                <label class="field">
+                    <span>리더 여부</span>
+                    <div class="switch">
+                        <input type="checkbox" id="cellLeaderStatus" name="cellLeaderStatus" th:checked="${member.cellLeaderStatus}" disabled>
+                        <label for="cellLeaderStatus" class="switch-ui"></label>
+                    </div>
+                </label>
+            </div>
+        </section>
+
+        <!-- 양육 · 성장 (년도 + 상/하반기) -->
+        <section class="section">
+            <h2>양육 · 성장</h2>
+            <!-- ⬇⬇ 이 섹션만 2열 고정 -->
+            <div class="grid grid-2">
+                <!-- 양육반 -->
+                <label class="field">
+                    <span>양육반(년도)</span>
+                    <div class="stack">
+                        <div id="nurtureYearText" class="read-only" th:text="${member.nurtureYear}">-</div>
+                        <input id="nurtureYearInput" type="number" name="nurtureYear" class="input hidden"
+                               min="1900" max="2999" step="1" disabled
+                               th:value="${member.nurtureYear.length() > 0 ? member.nurtureYear.substring(0, member.nurtureYear.length()-1) : ''}">
+                    </div>
+                </label>
+                <label class="field">
+                    <span>양육반(학기)</span>
+                    <div class="stack">
+                        <div id="nurtureSemText" class="read-only" th:text="${member.nurtureSemester}">-</div>
+                        <select id="nurtureSemSelect" name="nurtureSemester" class="input hidden" disabled>
+                            <option value="" th:selected="${member.nurtureSemester} == ''">없음</option>
+                            <option value="상반기" th:selected="${member.nurtureSemester} == '상반기'">상반기</option>
+                            <option value="하반기" th:selected="${member.nurtureSemester} == '하반기'">하반기</option>
+                        </select>
+                    </div>
+                </label>
+
+                <!-- 성장반 -->
+                <label class="field">
+                    <span>성장반(년도)</span>
+                    <div class="stack">
+                        <div id="growthYearText" class="read-only" th:text="${member.growthYear}">-</div>
+                        <input id="growthYearInput" type="number" name="growthYear" class="input hidden"
+                               min="1900" max="2999" step="1" disabled
+                               th:value="${member.growthYear.length() > 0 ? member.growthYear.substring(0, member.growthYear.length()-1) : ''}">
+                    </div>
+                </label>
+                <label class="field">
+                    <span>성장반(학기)</span>
+                    <div class="stack">
+                        <div id="growthSemText" class="read-only" th:text="${member.growthSemester}">-</div>
+                        <select id="growthSemSelect" name="growthSemester" class="input hidden" disabled>
+                            <option value="" th:selected="${member.growthSemester} == ''">없음</option>
+                            <option value="상반기" th:selected="${member.growthSemester} == '상반기'">상반기</option>
+                            <option value="하반기" th:selected="${member.growthSemester} == '하반기'">하반기</option>
+                        </select>
+                    </div>
+                </label>
+            </div>
+        </section>
+
+        <!-- 셀 정보 (셀 키는 제거) -->
+        <section class="section">
+            <h2>셀 정보</h2>
+            <div class="grid">
+                <label class="field field-wide">
+                    <span>셀 이름</span>
+                    <div class="stack">
+                        <div id="cellNameText" class="read-only" th:text="${member.cellName}">-</div>
+                        <select id="cellNameSelect" name="cellName" class="input hidden" disabled
+                                th:if="${cellLeaderList != null}">
+                            <option th:each="leader : ${cellLeaderList}"
+                                    th:value="${leader.cellName}"
+                                    th:selected="${member.cellName} == ${leader.cellName}"
+                                    th:text="${leader.memberName} + ' (' + ${leader.cellName} + ')'"
+                                    th:id="${leader.id}">
+                            </option>
+                        </select>
+                    </div>
+                </label>
+            </div>
+        </section>
+
+        <!-- 메모 -->
+        <section class="section">
+            <h2>메모</h2>
+            <textarea name="memberMemo" class="textarea" rows="5" th:text="${member.memberMemo}" disabled></textarea>
+        </section>
+
+        <!-- 수정 모드 전용 버튼 -->
+        <div class="edit-bar">
+            <button id="cancelBtn" type="button" class="btn ghost hidden">취소</button>
+            <button id="saveBtn" type="submit" class="btn primary hidden">저장</button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

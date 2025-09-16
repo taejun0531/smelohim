@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 승인 페이지</title>
+    <link rel="stylesheet" href="/css/userAcceptPage.css">
+    <script src="/js/userAcceptPage.js" defer></script>
+    <script src="/js/themeToggle.js" defer></script>
+</head>
+<body>
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="brand">엘로힘 청년부</div>
+        <div>
+            <a href="/" class="moveMainPageText">메인 페이지</a>
+            <button id="toggleTheme" class="theme-toggle" aria-pressed="false">🌙 다크모드</button>
+        </div>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>회원가입 승인</h1>
+        <p>신청자 · 관리자 · 셀리더를 한 눈에 관리하세요</p>
+    </div>
+
+    <!-- 신청자 -->
+    <div class="card">
+        <h3>신청자 <span th:text="${awaitList.size()} + '명'"></span></h3>
+        <table>
+            <thead>
+            <tr>
+                <th>이름</th>
+                <th>권한</th>
+                <th>삭제</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${awaitList}" th:attr="data-user-id=${user.id}">
+                <td th:text="${user.getUserName()}"></td>
+                <td>
+                    <span class="role-btn"
+                          th:onclick="|checkOnlyOne('checkbox_' + ${user.id}, this)|"
+                          th:classappend="${user.getUserRole() == 'AWAIT'} ? ' active'">신청</span>
+                    <span class="role-btn"
+                          th:classappend="${user.getUserRole() == 'USER'} ? ' active'">셀리더</span>
+                    <span class="role-btn"
+                          th:onclick="|checkOnlyOne('checkbox_' + ${user.id}, this)|"
+                          th:classappend="${user.getUserRole() == 'ADMIN'} ? ' active'">관리자</span>
+                </td>
+                <td>
+                    <button class="btn-delete" th:onclick="|deleteUser(${user.id})|">삭제</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 관리자 & 셀리더 -->
+    <div class="grid-2">
+        <!-- 관리자 -->
+        <div class="card">
+            <h3>관리자 <span th:text="${adminList.size()} + '명'"></span></h3>
+            <table>
+                <thead>
+                <tr>
+                    <th>이름</th>
+                    <th>권한</th>
+                    <th>삭제</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${adminList}" th:attr="data-user-id=${user.id}">
+                    <td th:text="${user.getUserName()}"></td>
+                    <td>
+                        <span class="role-btn"
+                              th:onclick="|checkOnlyOne('checkbox_' + ${user.id}, this)|"
+                              th:classappend="${user.getUserRole() == 'AWAIT'} ? ' active'">신청</span>
+                        <span class="role-btn"
+                              th:onclick="|checkOnlyOne('checkbox_' + ${user.id}, this)|"
+                              th:classappend="${user.getUserRole() == 'USER'} ? ' active'">셀리더</span>
+                        <span class="role-btn"
+                              th:onclick="|checkOnlyOne('checkbox_' + ${user.id}, this)|"
+                              th:classappend="${user.getUserRole() == 'ADMIN'} ? ' active'">관리자</span>
+                    </td>
+                    <td>
+                        <button class="btn-delete" th:onclick="|deleteUser(${user.id})|">삭제</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 셀리더 -->
+        <div class="card">
+            <h3>셀리더 <span th:text="${cellLeaderList.size()} + '명'"></span></h3>
+            <table>
+                <thead>
+                <tr>
+                    <th>이름</th>
+                    <th>권한</th>
+                    <th>삭제</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user : ${cellLeaderList}" th:attr="data-user-id=${user.id}">
+                    <td th:text="${user.getUserName()}"></td>
+                    <td>
+                        <span class="role-btn"
+                              th:onclick="|checkOnlyOne('checkbox_' + ${user.id}, this)|"
+                              th:classappend="${user.getUserRole() == 'AWAIT'} ? ' active'">신청</span>
+                        <span class="role-btn"
+                              th:onclick="|checkOnlyOne('checkbox_' + ${user.id}, this)|"
+                              th:classappend="${user.getUserRole() == 'USER'} ? ' active'">셀리더</span>
+                        <span class="role-btn"
+                              th:onclick="|checkOnlyOne('checkbox_' + ${user.id}, this)|"
+                              th:classappend="${user.getUserRole() == 'ADMIN'} ? ' active'">관리자</span>
+                    </td>
+                    <td>
+                        <button class="btn-delete" th:onclick="|deleteUser(${user.id})|">삭제</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

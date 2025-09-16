@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입</title>
+    <link rel="stylesheet" type="text/css" href="/css/createAccountPage.css">
+    <script type="text/javascript" src="/js/createAccountPage.js"></script>
+    <script type="text/javascript" src="/js/themeToggle.js" defer></script>
+</head>
+<body>
+    <!-- 상단: 브랜드 라벨 + 다크모드 토글 -->
+    <div class="topbar">
+        <div class="smelohim_label">
+            <p class="smelohim_label_p">엘로힘 청년부</p>
+        </div>
+        <button id="toggleTheme" class="theme-toggle" aria-pressed="false">🌙 다크모드</button>
+    </div>
+
+    <div class="join_wrap">
+        <p class="join_wrap_p">회원가입</p>
+        <div class="card_divider"></div>
+
+        <form class="join_form" action="/process/createAccount" method="POST">
+            <div class="join_list_box">
+                <div class="join_name_box">
+                    <label>이름(구분문자 포함)</label>
+                    <input class="input_join_name" type="text" id="userName" name="userName" onkeydown="userNameKeyDown()"/>
+                    <input class="input_join_check_id" type="button" id="userNameCheck" name="userNameCheck" value="이름 중복 확인"
+                           onclick="userNameCheckPost()">
+                </div>
+
+                <div class="join_id_box">
+                    <label>아이디</label>
+                    <input class="input_join_id" type="text" id="userId" name="userId" onkeydown="userIdKeyDown()"/>
+                    <input class="input_join_check_id" type="button" id="userIdCheck" name="userIdCheck" value="아이디 중복 확인"
+                           onclick="userIdCheckPost()">
+                </div>
+
+                <div class="join_password_box">
+                    <label>비밀번호</label>
+                    <input class="input_join_password" type="password" id="userPassword" name="userPassword"/>
+                </div>
+
+                <div class="join_password_check_box">
+                    <label>비밀번호 확인</label>
+                    <input class="input_join_password_check" type="password" id="userCheckPassword" name="userCheckPassword"/>
+                </div>
+
+                <input type="hidden" id="userNameCheckHidden" value="false">
+                <input type="hidden" id="userIdCheckHidden" value="false">
+            </div>
+
+            <div class="join_submit_box">
+                <input class="input_join" type="button" value="회원가입" name="createAccount" onclick="submit_post()"/>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -6,25 +6,28 @@ import lombok.*;
 @Entity
 @Getter
 @Setter
-@Table( catalog = "smelohim", name = "loginuser")
+@Table( catalog = "smelohim", name = "attendance")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Users {
+public class Attendances {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String userId;
     @Column
-    private String userPassword;
+    private String attendanceDate;
     @Column
-    private String userName;
+    private String name;
     @Column
-    private String userRole;
+    private boolean worshipStatus;
     @Column
-    private Long memberId;
+    private boolean cellStatus;
+    @Column
+    private String attendanceMemo;
+    @Column
+    private Long memberKey;
+
 }

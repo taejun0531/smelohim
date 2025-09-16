@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" type="text/css" href="/css/mainPage.css">
+    <script type="text/javascript" src="/js/themeToggle.js" defer></script>
+</head>
+<body>
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="brand">엘로힘 청년부</div>
+        <button id="toggleTheme" class="theme-toggle" aria-pressed="false">🌙 다크모드</button>
+    </div>
+
+    <!-- Greeting + Logout -->
+    <div class="header-row">
+        <div class="greeting">승인 대기 중</div>
+        <a class="logout" href="/process/logout">로그아웃</a>
+    </div>
+
+    <!-- Cards -->
+    <div class="grid">
+        <div class="card notice">
+            <h3>관리자 승인 대기</h3>
+            <p>회원가입 요청이 접수되었습니다. 관리자(목사님/회장/부회장) 승인 후 이용하실 수 있어요.</p>
+            <p class="help" style="margin-top:8px; color:var(--muted); font-size:14px;">
+                문의는 임원진에게 직접 연락해주세요. 승인 완료 시 자동으로 메인 메뉴가 열립니다.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
