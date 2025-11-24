@@ -14,13 +14,17 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class userAcceptService {
+public class UserAcceptService {
 
     private final UsersRepository usersRepository;
     private final MembersRepository membersRepository;
 
     public List<Users> getAllUser () {
         return usersRepository.findAll();
+    }
+
+    public boolean existsByLeaderId(Long memberId) {
+        return !usersRepository.existsByMemberId(memberId); // 존재하지 않아야 true, 이미 존재하면 false
     }
 
     public List<Users> findAllUserByRole(String role) {

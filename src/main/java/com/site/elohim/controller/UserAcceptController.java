@@ -2,7 +2,7 @@ package com.site.elohim.controller;
 
 import com.site.elohim.model.Members;
 import com.site.elohim.model.Users;
-import com.site.elohim.service.userAcceptService;
+import com.site.elohim.service.UserAcceptService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,16 +11,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @Controller
-public class userAcceptController {
+public class UserAcceptController {
 
-    private final userAcceptService service;
+    private final UserAcceptService service;
 
-    public userAcceptController(userAcceptService service) {
+    public UserAcceptController(UserAcceptService service) {
         this.service = service;
     }
 
@@ -37,6 +36,13 @@ public class userAcceptController {
         mnv.addObject("adminList", adminList);
 
         return mnv;
+    }
+
+    @PostMapping("/admin/isEmptyLeaderId")
+    @ResponseBody
+    public boolean isEmptyLeaderId(@RequestBody Map<String, String> data) {
+        Long leaderId = Long.parseLong(data.get("leaderId"));
+        return service.existsByLeaderId(leaderId); // 이미 있는 경우 false, 비어 있는 경우 true
     }
 
     @PostMapping("/admin/accept_user")

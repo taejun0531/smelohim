@@ -5,11 +5,12 @@ import com.site.elohim.repository.MembersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class parsonalDataService {
+public class PersonalDataService {
 
     private final MembersRepository membersRepository;
 
@@ -25,8 +26,14 @@ public class parsonalDataService {
         return membersRepository.findByMemberNameContainingOrderByMemberNameAsc(name);
     }
 
-    public List<Members> getMembersByBirth(String birth) {
-        return membersRepository.findByMemberBirthContainingOrderByMemberNameAsc(birth);
+    public List<Members> getMembersByBirth(String birthYear, String birthMonth) {
+        if (birthMonth == null || birthMonth.isBlank())
+            return membersRepository.findByBirthYear(Integer.parseInt(birthYear));
+
+        if (birthYear == null || birthYear.isBlank())
+            return membersRepository.findByBirthMonth(Integer.parseInt(birthMonth));
+
+        return membersRepository.findByBirthYearAndMonth(Integer.parseInt(birthYear), Integer.parseInt(birthMonth));
     }
 
     public List<Members> getMembersByCellKey(Long cellKey) {
@@ -77,17 +84,16 @@ public class parsonalDataService {
             return membersRepository.findAllByOrderByMemberBirthDesc();
     }
 
-    public boolean deleteMemberById(Long id){
-        membersRepository.deleteById(id);
-        return true;
-    }
-
     public boolean createMember(Members members) {
         membersRepository.save(members);
         return true;
     }
 
-    public boolean checkMember(String name, String birth) {
+    // 있다면 true 없다면 false
+    public boolean checkMember(String name, LocalDate birth) {
+        if (birth == null)
+            return false;
+
         return membersRepository.existsMembersByMemberNameAndMemberBirth(name, birth);
     }
 

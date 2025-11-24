@@ -1,7 +1,7 @@
 package com.site.elohim.controller;
 
-import com.site.elohim.model.createAccountRequest;
-import com.site.elohim.service.createAccountService;
+import com.site.elohim.dto.CreateAccountRequest;
+import com.site.elohim.service.CreateAccountService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,11 +12,11 @@ import org.springframework.web.servlet.ModelAndView;
 import java.util.Map;
 
 @Controller
-public class createAccountController {
+public class CreateAccountController {
 
-    private final com.site.elohim.service.createAccountService createAccountService;
+    private final CreateAccountService createAccountService;
 
-    public createAccountController(createAccountService createAccountService) {
+    public CreateAccountController(CreateAccountService createAccountService) {
         this.createAccountService = createAccountService;
     }
 
@@ -27,7 +27,7 @@ public class createAccountController {
     }
 
     @PostMapping("/process/createAccount")
-    public ModelAndView processCreateAccount(createAccountRequest request) {
+    public ModelAndView processCreateAccount(CreateAccountRequest request) {
         ModelAndView mv;
 
         if(createAccountService.createAccount(request)){

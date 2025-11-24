@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>인적사항</title>
+    <script type="text/javascript" src="/js/personalDataPage.js" defer></script>
+    <script src="/js/themeToggle.js" defer></script>
+    <link rel="stylesheet" href="/css/personalDataPage.css">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
+
+</head>
+<body>
+<div class="topbar">
+    <div class="brand">엘로힘 청년부</div>
+    <button id="toggleTheme" class="theme-toggle" aria-pressed="false">🌙 다크모드</button>
+</div>
+
+<div class="personalDataPage_top">
+    <p class="personalDataText">인적사항 페이지</p>
+    <p class="userNameText" th:text="${username ?: ''}"></p>
+    <a class="moveMainPageText" href="/">메인 페이지</a>
+</div>
+
+<table>
+    <tr>
+        <th>이름</th>
+        <th>생년월일</th>
+        <th>셀 정보</th>
+        <th>세례여부</th>
+        <th>양육반</th>
+        <th>성장반</th>
+        <th>검색</th>
+    </tr>
+    <tr>
+        <td><input type="text" id="find_name" /></td>
+        <td>
+            <input type="number" placeholder="YYYY" min="1900" max="2999" id="find_birth_year" />
+            <select id="find_birth_month">
+                <option value="">MM</option>
+                <option value="01">01</option>
+                <option value="02">02</option>
+                <option value="03">03</option>
+                <option value="04">04</option>
+                <option value="05">05</option>
+                <option value="06">06</option>
+                <option value="07">07</option>
+                <option value="08">08</option>
+                <option value="09">09</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+            </select>
+        </td>
+        <td>
+            <select id="find_cellLeader">
+                <option value="">없음</option>
+                <option value="allCellLeader">셀 리더 모두</option>
+                <option th:each="cellLeader : ${cellLeaderList}"
+                        th:text="${cellLeader.cellName ?: ''}"
+                        th:value="${cellLeader.id}"></option>
+            </select>
+        </td>
+        <td>
+            <select id="find_baptism">
+                <option value="">없음</option>
+                <option value="입교">입교</option>
+                <option value="세례">세례</option>
+                <option value="유아세례">유아세례</option>
+                <option value="학습">학습</option>
+            </select>
+        </td>
+        <td>
+            <input type="number" placeholder="YYYY" min="1900" max="2999" id="find_nurture_year" />
+            <select id="find_nurture_semester">
+                <option value="">없음</option>
+                <option value="상반기">상반기</option>
+                <option value="하반기">하반기</option>
+            </select>
+        </td>
+        <td>
+            <input type="number" placeholder="YYYY" min="1900" max="2999" id="find_growth_year" />
+            <select id="find_growth_semester">
+                <option value="">없음</option>
+                <option value="상반기">상반기</option>
+                <option value="하반기">하반기</option>
+            </select>
+        </td>
+        <td><input type="button" id="searchBtn" onclick="findMember(this)" value="검색"/></td>
+    </tr>
+</table>
+
+<table>
+    <label id="memberTotalSize" th:text="${'총원 : ' + memberList.size() + '명'}"></label>
+    <tr>
+        <th><input type="button" id="addMemberBtn" onclick="addMember(this)" value="청년 추가"/></th>
+        <th onclick="nameSort()">이름</th>
+        <th onclick="birthSort()">생년월일</th>
+        <th>전화번호</th>
+        <th>셀 정보</th>
+        <th>세례여부</th>
+        <th>양육반</th>
+        <th>성장반</th>
+    </tr>
+
+    <tbody id="memberTable">
+    <tr th:each="member, num : ${memberList}">
+        <td th:text="${num.count}"></td>
+
+        <td onclick="memberPopup(this)"
+            th:id="*{member.id}"
+            th:text="${member.memberName ?: ''}"></td>
+
+        <!-- 생년월일 null-safe -->
+        <td th:text="${member.memberBirth != null ? #temporals.format(member.memberBirth, 'yyyy-MM-dd') : ''}"></td>
+
+        <td th:text="${member.memberPhoneNumber ?: ''}"></td>
+        <td th:text="${member.cellName ?: ''}"></td>
+        <td th:text="${member.baptismStatus ?: ''}"></td>
+
+        <!-- 양육반 -->
+        <td th:text="${(member.nurtureYear ?: '') + ' ' + (member.nurtureSemester ?: '')}"></td>
+
+        <!-- 성장반 -->
+        <td th:text="${(member.growthYear ?: '') + ' ' + (member.growthSemester ?: '')}"></td>
+    </tr>
+    </tbody>
+    <select id="cellLeaderTemplate" style="display:none;">
+        <option value="">없음</option>
+        <option th:each="cl : ${cellLeaderList}"
+                th:value="${cl.id}"
+                th:text="${cl.cellName ?: ''}">
+        </option>
+    </select>
+</table>
+</body>
+</html>

@@ -24,7 +24,13 @@
     </div>
     <div class="actions">
         <button id="editBtn" class="btn secondary">✏️ 수정</button>
-        <button id="deleteBtn" class="btn danger">🗑️ 삭제</button>
+        <button id="deleteBtn"
+                class="btn danger"
+                th:attr="data-id=${member.id},
+                 data-name=${member.memberName},
+                 data-year=${member.memberBirth != null ? #temporals.format(member.memberBirth, 'yyyy') : ''}">
+            🗑️ 삭제
+        </button>
     </div>
 </div>
 
@@ -45,30 +51,47 @@
                 </label>
                 <label class="field">
                     <span>생일</span>
-                    <input type="text" name="memberBirth" class="input" th:value="${member.memberBirth}" placeholder="YYYY-MM-DD" disabled>
+                    <!-- null이면 빈 문자열, 있으면 yyyy-MM-dd -->
+                    <input type="text"
+                           name="memberBirth"
+                           class="input"
+                           th:value="${member.memberBirth != null ? #temporals.format(member.memberBirth, 'yyyy-MM-dd') : ''}"
+                           placeholder="YYYY-MM-DD"
+                           disabled>
                 </label>
                 <label class="field">
                     <span>핸드폰 번호</span>
-                    <input type="text" name="memberPhoneNumber" class="input" th:value="${member.memberPhoneNumber}" placeholder="010-0000-0000" disabled>
+                    <input type="text"
+                           name="memberPhoneNumber"
+                           class="input"
+                           th:value="${member.memberPhoneNumber == null ? '' : member.memberPhoneNumber}"
+                           placeholder="010-0000-0000"
+                           disabled>
                 </label>
                 <label class="field field-wide">
                     <span>주소</span>
-                    <input type="text" name="memberAddress" class="input" th:value="${member.memberAddress}" disabled>
+                    <input type="text"
+                           name="memberAddress"
+                           class="input"
+                           th:value="${member.memberAddress == null ? '' : member.memberAddress}"
+                           disabled>
                 </label>
             </div>
         </section>
 
-        <!-- 신앙/참석 상태 -->
+        <!-- 세례 · 예배 · 셀모임 상태 -->
         <section class="section">
-            <h2>신앙 · 참석</h2>
+            <h2>세례 · 예배 · 셀모임</h2>
             <div class="grid">
                 <!-- 세례 여부: 읽기=텍스트, 수정=셀렉트(value는 ""/입교/세례/유아세례/학습) -->
                 <label class="field">
                     <span>세례 여부</span>
                     <div class="stack">
-                        <div class="read-only" id="baptismText" th:text="${member.baptismStatus}">-</div>
+                        <div class="read-only"
+                             id="baptismText"
+                             th:text="${member.baptismStatus == null ? '' : member.baptismStatus}">-</div>
                         <select name="baptismStatus" id="baptismSelect" class="input hidden" disabled>
-                            <option value=""></option>
+                            <option value="">없음</option>
                             <option value="입교">입교</option>
                             <option value="세례">세례</option>
                             <option value="유아세례">유아세례</option>
@@ -81,7 +104,8 @@
                 <label class="field">
                     <span>예배 빈도</span>
                     <div class="inline">
-                        <div class="read-only" th:text="${member.worshipStatus}">-</div>
+                        <div class="read-only"
+                             th:text="${member.worshipStatus == null ? '' : member.worshipStatus}">-</div>
                         <button id="refreshWorshipBtn" type="button" class="btn chip">갱신하기</button>
                     </div>
                 </label>
@@ -89,7 +113,8 @@
                 <label class="field">
                     <span>셀모임 빈도</span>
                     <div class="inline">
-                        <div class="read-only" th:text="${member.cellStatus}">-</div>
+                        <div class="read-only"
+                             th:text="${member.cellStatus == null ? '' : member.cellStatus}">-</div>
                         <button id="refreshCellBtn" type="button" class="btn chip">갱신하기</button>
                     </div>
                 </label>
@@ -97,9 +122,19 @@
                 <!-- 리더 여부 -->
                 <label class="field">
                     <span>리더 여부</span>
-                    <div class="switch">
-                        <input type="checkbox" id="cellLeaderStatus" name="cellLeaderStatus" th:checked="${member.cellLeaderStatus}" disabled>
-                        <label for="cellLeaderStatus" class="switch-ui"></label>
+                    <div class="inline">
+                        <div class="switch">
+                            <input type="checkbox" id="cellLeaderStatus" name="cellLeaderStatus"
+                                   th:checked="${member.cellLeaderStatus}" disabled>
+                            <label for="cellLeaderStatus" class="switch-ui"></label>
+                        </div>
+
+                        <!-- 리더일 때 직접 입력하는 텍스트 인풋 -->
+                        <input id="cellNameInlineInput" type="text" class="input cellname-inline hidden"
+                               placeholder="셀 이름 입력" disabled aria-describedby="cellNameHelpInline">
+
+                        <!-- 실제 제출에 사용할 hidden input (동적으로 값 세팅) -->
+                        <input type="hidden" id="cellNameHidden" name="cellName" value="">
                     </div>
                 </label>
             </div>
@@ -108,26 +143,39 @@
         <!-- 양육 · 성장 (년도 + 상/하반기) -->
         <section class="section">
             <h2>양육 · 성장</h2>
-            <!-- ⬇⬇ 이 섹션만 2열 고정 -->
+            <!-- 이 섹션만 2열 고정 -->
             <div class="grid grid-2">
                 <!-- 양육반 -->
                 <label class="field">
                     <span>양육반(년도)</span>
                     <div class="stack">
-                        <div id="nurtureYearText" class="read-only" th:text="${member.nurtureYear}">-</div>
-                        <input id="nurtureYearInput" type="number" name="nurtureYear" class="input hidden"
-                               min="1900" max="2999" step="1" disabled
-                               th:value="${member.nurtureYear.length() > 0 ? member.nurtureYear.substring(0, member.nurtureYear.length()-1) : ''}">
+                        <div id="nurtureYearText"
+                             class="read-only"
+                             th:text="${member.nurtureYear == null ? '' : member.nurtureYear}">-</div>
+                        <input id="nurtureYearInput"
+                               type="number"
+                               name="nurtureYear"
+                               class="input hidden"
+                               min="1900" max="2999" step="1"
+                               disabled
+                               th:value="${member.nurtureYear != null && member.nurtureYear.length() > 0
+                                          ? member.nurtureYear.substring(0, member.nurtureYear.length() - 1)
+                                          : ''}">
                     </div>
                 </label>
                 <label class="field">
                     <span>양육반(학기)</span>
                     <div class="stack">
-                        <div id="nurtureSemText" class="read-only" th:text="${member.nurtureSemester}">-</div>
+                        <div id="nurtureSemText"
+                             class="read-only"
+                             th:text="${member.nurtureSemester == null ? '' : member.nurtureSemester}">-</div>
                         <select id="nurtureSemSelect" name="nurtureSemester" class="input hidden" disabled>
-                            <option value="" th:selected="${member.nurtureSemester} == ''">없음</option>
-                            <option value="상반기" th:selected="${member.nurtureSemester} == '상반기'">상반기</option>
-                            <option value="하반기" th:selected="${member.nurtureSemester} == '하반기'">하반기</option>
+                            <option value=""
+                                    th:selected="${#strings.isEmpty(member.nurtureSemester)}">없음</option>
+                            <option value="상반기"
+                                    th:selected="${member.nurtureSemester != null and member.nurtureSemester == '상반기'}">상반기</option>
+                            <option value="하반기"
+                                    th:selected="${member.nurtureSemester != null and member.nurtureSemester == '하반기'}">하반기</option>
                         </select>
                     </div>
                 </label>
@@ -136,20 +184,33 @@
                 <label class="field">
                     <span>성장반(년도)</span>
                     <div class="stack">
-                        <div id="growthYearText" class="read-only" th:text="${member.growthYear}">-</div>
-                        <input id="growthYearInput" type="number" name="growthYear" class="input hidden"
-                               min="1900" max="2999" step="1" disabled
-                               th:value="${member.growthYear.length() > 0 ? member.growthYear.substring(0, member.growthYear.length()-1) : ''}">
+                        <div id="growthYearText"
+                             class="read-only"
+                             th:text="${member.growthYear == null ? '' : member.growthYear}">-</div>
+                        <input id="growthYearInput"
+                               type="number"
+                               name="growthYear"
+                               class="input hidden"
+                               min="1900" max="2999" step="1"
+                               disabled
+                               th:value="${member.growthYear != null && member.growthYear.length() > 0
+                                          ? member.growthYear.substring(0, member.growthYear.length() - 1)
+                                          : ''}">
                     </div>
                 </label>
                 <label class="field">
                     <span>성장반(학기)</span>
                     <div class="stack">
-                        <div id="growthSemText" class="read-only" th:text="${member.growthSemester}">-</div>
+                        <div id="growthSemText"
+                             class="read-only"
+                             th:text="${member.growthSemester == null ? '' : member.growthSemester}">-</div>
                         <select id="growthSemSelect" name="growthSemester" class="input hidden" disabled>
-                            <option value="" th:selected="${member.growthSemester} == ''">없음</option>
-                            <option value="상반기" th:selected="${member.growthSemester} == '상반기'">상반기</option>
-                            <option value="하반기" th:selected="${member.growthSemester} == '하반기'">하반기</option>
+                            <option value=""
+                                    th:selected="${#strings.isEmpty(member.growthSemester)}">없음</option>
+                            <option value="상반기"
+                                    th:selected="${member.growthSemester != null and member.growthSemester == '상반기'}">상반기</option>
+                            <option value="하반기"
+                                    th:selected="${member.growthSemester != null and member.growthSemester == '하반기'}">하반기</option>
                         </select>
                     </div>
                 </label>
@@ -166,6 +227,11 @@
                         <div id="cellNameText" class="read-only" th:text="${member.cellName}">-</div>
                         <select id="cellNameSelect" name="cellName" class="input hidden" disabled
                                 th:if="${cellLeaderList != null}">
+                            <option th:value="${null}"
+                                    th:selected="${member.cellName} == ''"
+                                    th:text="없음"
+                                    th:id="${null}">
+                            </option>
                             <option th:each="leader : ${cellLeaderList}"
                                     th:value="${leader.cellName}"
                                     th:selected="${member.cellName} == ${leader.cellName}"
@@ -181,7 +247,11 @@
         <!-- 메모 -->
         <section class="section">
             <h2>메모</h2>
-            <textarea name="memberMemo" class="textarea" rows="5" th:text="${member.memberMemo}" disabled></textarea>
+            <textarea name="memberMemo"
+                      class="textarea"
+                      rows="5"
+                      th:text="${member.memberMemo == null ? '' : member.memberMemo}"
+                      disabled></textarea>
         </section>
 
         <!-- 수정 모드 전용 버튼 -->

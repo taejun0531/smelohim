@@ -3,6 +3,8 @@ package com.site.elohim.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Getter
 @Setter
@@ -18,7 +20,7 @@ public class Attendances {
     private Long id;
 
     @Column
-    private String attendanceDate;
+    private LocalDate attendanceDate;
     @Column
     private String name;
     @Column
@@ -28,6 +30,6 @@ public class Attendances {
     @Column
     private String attendanceMemo;
     @Column
-    private Long memberKey;
+    private Long memberId;
 
 }

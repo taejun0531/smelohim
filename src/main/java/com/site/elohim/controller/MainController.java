@@ -9,7 +9,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 
 @Controller
-public class mainController {
+public class MainController {
 
     @GetMapping("/")
     public ModelAndView home(Model model) {

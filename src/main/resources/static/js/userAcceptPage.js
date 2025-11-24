@@ -5,6 +5,7 @@
 const API_URL_ACCEPT = "/admin/accept_user";
 const API_URL_LEADERS = "/admin/getCellLeaderInfo";
 const API_URL_DELETE = "/admin/delete_user";
+const API_URL_ISEMPTYLEADERID = "/admin/isEmptyLeaderId";
 
 let secAwait = null, secAdmin = null, secLeader = null;
 let cellLeaderListCache = null;
@@ -53,6 +54,16 @@ function setActivePillInRow(tr, roleCode){
 function moveRowToSection(tr, roleCode){
     const sec = codeToSection(roleCode); if(!sec?.tbody) return;
     sec.tbody.appendChild(tr); setActivePillInRow(tr, roleCode); updateCounts();
+}
+
+async function postIsEmptyLeaderId(leaderId){
+    try{
+        const res = await fetch(API_URL_ISEMPTYLEADERID, {
+            method:"POST", headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ leaderId:String(leaderId)})
+        });
+        return await res.json();
+    }catch(e){ console.error(e); return false; }
 }
 
 async function postChangeRole(userId, userRole, extra={}){
@@ -155,6 +166,11 @@ async function handleRoleChange(tr, pill){
     if (roleText === "셀리더"){
         const leaders = await getCellLeaderInfo();
         buildLeaderPopover(pill, leaders, async ({id, name})=>{
+            const isEmptyLeaderId = await postIsEmptyLeaderId(id);
+            if(!isEmptyLeaderId) {
+                alert("다른 사용자에게 이미 지정된 셀리더입니다.");
+                return;
+            }
             if (!confirm(`정말로 셀리더(${name})로 권한을 변경하시겠습니까?`)) return;
             const ok = await postChangeRole(userId, "USER", { leaderId:id });
             if (!ok){ alert("수정 실패했습니다."); return; }

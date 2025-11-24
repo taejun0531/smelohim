@@ -3,6 +3,8 @@ package com.site.elohim.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Getter
 @Setter
@@ -19,7 +21,7 @@ public class Members {
     @Column
     private String memberName;
     @Column
-    private String memberBirth;
+    private LocalDate memberBirth;
     @Column
     private String memberPhoneNumber;
     @Column

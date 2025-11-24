@@ -14,4 +14,5 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
     Optional<Users> findById(Long id);
     List<Users> findByUserRoleOrderByUserName(String role);
     boolean existsById(Long id);
+    boolean existsByMemberId(Long memberId);
 }

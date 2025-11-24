@@ -114,12 +114,12 @@ body.dark .brand{
 body.dark .theme-toggle{ color:#08110e; background:#9cf0c3; }
 
 /* ===== 상단 좁게/깔끔 ==================================================== */
-.parsonalDataPage_top{
+.personalDataPage_top{
     width:min(1080px,96vw);
     margin:6px auto 4px;
     display:grid; grid-template-columns: 1fr auto auto; gap:8px; align-items:center;
 }
-.parsonalDataText{
+.personalDataText{
     margin:0; font-size:15px; font-weight:900; color:var(--brand-dark);
     background:linear-gradient(180deg,#eafff1,#fff);
     border:1px solid var(--border); border-radius:999px;
@@ -239,8 +239,266 @@ table:nth-of-type(2) tr th[onclick][data-sort="desc"].sorted::after{ content:"�
 /* 반응형 */
 @media (max-width: 920px){
     table{ display:block; overflow-x:auto; white-space:nowrap; }
-    .parsonalDataPage_top{
+    .personalDataPage_top{
         grid-template-columns: 1fr; gap:6px;
     }
     .moveMainPageText{ justify-self:start; }
+}
+
+/* ==== 청년 추가 버튼 ==================================================== */
+#addMemberBtn {
+    width: 100%;
+    height: 36px;
+    border: none;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 13px;
+    cursor: pointer;
+
+    /* 검색 버튼과 동일한 초록 계열 */
+    background: linear-gradient(180deg, var(--brand), var(--brand-dark));
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(var(--ring), .26);
+
+    transition: filter .15s ease, transform .12s ease;
+}
+#addMemberBtn:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+}
+#addMemberBtn:active {
+    filter: brightness(0.95);
+    transform: translateY(0);
+}
+body.dark #addMemberBtn {
+    background: linear-gradient(180deg, var(--brand), var(--brand-dark));
+    color: #fff;
+}
+
+/* ==== 청년 리스트 번호 정렬 ============================================ */
+#memberTable td:first-child {
+    text-align: center;
+    font-weight: 700;
+    width: 50px; /* 번호 칸 고정 너비 */
+}
+
+/* ==== 청년 추가 입력 행 전체 스타일 ==================================== */
+
+#newMemberRow td {
+    padding: 8px 10px;
+    background: rgba(34,197,94,.03);
+    border-bottom: 1px solid var(--border);
+}
+
+body.dark #newMemberRow td {
+    background: rgba(41,211,106,.14);
+}
+
+/* 첫 번째 칸(청년 저장 버튼)만 살짝 넓게 */
+#newMemberRow td:first-child {
+    width: 110px;
+    text-align: center;
+}
+
+/* 청년 추가 행의 input/select 공통 스타일 */
+#newMemberRow input[type="text"],
+#newMemberRow input[type="number"],
+#newMemberRow input[type="date"],
+#newMemberRow select {
+    width: 100%;
+    height: 34px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+body.dark #newMemberRow input[type="text"],
+body.dark #newMemberRow input[type="number"],
+body.dark #newMemberRow input[type="date"],
+body.dark #newMemberRow select {
+    background: #122821;
+    border-color: #2a4a3e;
+    color: #edfff7;
+}
+
+#newMemberRow input::placeholder {
+    color: var(--placeholder);
+    opacity: .9;
+}
+body.dark #newMemberRow input::placeholder {
+    color: #a4dfcd;
+    opacity: .95;
+}
+
+#newMemberRow input:focus,
+#newMemberRow select:focus {
+    border-color: rgba(var(--ring), .55);
+    box-shadow: 0 0 0 3px rgba(var(--ring), .22);
+}
+
+/* 날짜 입력: 깔끔한 스타일 + 기본 달력 아이콘 유지 */
+#newMemberRow input[type="date"] {
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    appearance: none;
+
+    position: relative;
+    width: 100%;
+    height: 34px;
+    padding: 6px 34px 6px 10px; /* 오른쪽에 아이콘 자리 확보 */
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #ffffff;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+body.dark #newMemberRow input[type="date"] {
+    background: #122821;
+    border-color: #2a4a3e;
+    color: #edfff7;
+}
+
+/* 크롬/엣지 기본 달력 아이콘 살짝 정리 */
+#newMemberRow input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    opacity: 0.85;
+}
+
+#newMemberRow input[type="date"]:focus {
+    border-color: rgba(var(--ring), .55);
+    box-shadow: 0 0 0 3px rgba(var(--ring), .22);
+}
+
+/* ==== 청년 저장 버튼 ==================================================== */
+.save-member-btn {
+    width: 100%;
+    height: 32px;
+    border: none;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 12px;
+    cursor: pointer;
+
+    background: linear-gradient(180deg, var(--brand), var(--brand-dark));
+    color: #ffffff;
+    box-shadow: 0 6px 14px rgba(var(--ring), .22);
+
+    transition: filter .15s ease, transform .12s ease;
+}
+.save-member-btn:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+}
+.save-member-btn:active {
+    filter: brightness(0.95);
+    transform: translateY(0);
+}
+
+/* flatpickr 엘로힘 초록톤 커스텀 (선택) */
+.flatpickr-calendar {
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    background: var(--card);
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    background: linear-gradient(180deg, var(--brand), var(--brand-dark));
+    border-color: var(--brand-dark);
+    color: #fff;
+}
+
+.flatpickr-day:hover {
+    background: rgba(34,197,94,.12);
+}
+
+/* ==== 공통 Select 통합 디자인 ========================================= */
+/* 라이트 버전 */
+table:first-of-type select,
+#newMemberRow select{
+    width: 100%;
+    height: 34px;
+    padding: 6px 28px 6px 10px;   /* 오른쪽 화살표 자리 확보 */
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background-color: #ffffff;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    /* 커스텀 화살표 */
+    background-image:
+            linear-gradient(45deg, transparent 50%, var(--placeholder) 50%),
+            linear-gradient(135deg, var(--placeholder) 50%, transparent 50%);
+    background-position:
+            calc(100% - 14px) 50%,
+            calc(100% - 9px) 50%;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+
+    transition:
+            border-color .15s ease,
+            box-shadow .15s ease,
+            background-color .15s ease;
+}
+
+/* 다크 버전 */
+body.dark table:first-of-type select,
+body.dark #newMemberRow select{
+    background-color: #122821;
+    border-color: #2a4a3e;
+    color: #edfff7;
+
+    background-image:
+            linear-gradient(45deg, transparent 50%, #a4dfcd 50%),
+            linear-gradient(135deg, #a4dfcd 50%, transparent 50%);
+}
+
+/* 포커스 공통 효과 */
+table:first-of-type select:focus,
+#newMemberRow select:focus{
+    border-color: rgba(var(--ring), .55);
+    box-shadow: 0 0 0 3px rgba(var(--ring), .20);
+}
+
+/* 옵션 색상(라이트/다크) */
+table:first-of-type select option,
+#newMemberRow select option{
+    background-color: var(--card);
+    color: var(--text);
+}
+table:first-of-type select option:checked,
+#newMemberRow select option:checked{
+    background-color: rgba(34,197,94,.12);
+    color: var(--brand-dark);
+}
+
+body.dark table:first-of-type select option,
+body.dark #newMemberRow select option{
+    background-color: #122821;
+    color: #edfff7;
+}
+body.dark table:first-of-type select option:checked,
+body.dark #newMemberRow select option:checked{
+    background-color: rgba(41,211,106,.35);
+    color: #eafff4;
 }

@@ -1,7 +1,7 @@
 package com.site.elohim.service;
 
 import com.site.elohim.model.Users;
-import com.site.elohim.model.createAccountRequest;
+import com.site.elohim.dto.CreateAccountRequest;
 import com.site.elohim.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -11,12 +11,12 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class createAccountService {
+public class CreateAccountService {
 
     private final UsersRepository usersRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
-    public boolean createAccount(createAccountRequest request) {
+    public boolean createAccount(CreateAccountRequest request) {
 
         Optional<Users> tmp = usersRepository.findByUserId(request.getUserId());
 

@@ -36,7 +36,7 @@
 
     // 시스템 테마 변화도 반영(사용자가 저장을 안했을 때)
     const mm = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
-    if (mm && saved == null) {
+    if (mm) {
         mm.addEventListener("change", (e) => {
             withFade(() => applyTheme(e.matches ? "dark" : "light"));
         });
