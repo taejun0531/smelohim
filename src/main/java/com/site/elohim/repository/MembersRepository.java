@@ -113,4 +113,14 @@ public interface MembersRepository extends JpaRepository<Members, Long> {
     where m.cellKey = :leaderId
     """)
     void resetCellNameByCellKey(@Param("leaderId") Long leaderId);
+
+    @Query("""
+        select m
+        from Members m
+        join Users u
+          on m.cellKey = u.memberId
+        where u.id = :loginuser_PkId
+        order by m.memberName asc
+        """)
+    List<Members> findMembersByLeaderUserId(@Param("loginuser_PkId") Long loginuser_PkId);
 }

@@ -6,6 +6,12 @@
     <title>로그인</title>
     <link rel="stylesheet" type="text/css" href="/css/loginPage.css">
     <script type="text/javascript" src="/js/themeToggle.js" defer></script>
+    <script>
+        const loginError = document.getElementById('loginError');
+        if (loginError) {
+            alert('아이디 또는 비밀번호가 일치하지 않습니다.');
+        }
+    </script>
 </head>
 <body>
     <!-- 상단: 브랜드 + 테마 토글 -->
@@ -43,5 +49,12 @@
             <a class="find_text" href="/createAccountPage">회원가입</a>
         </li>
     </ul>
+
+    <!-- 로그인 실패 시 error 파라미터가 있을 때만 alert 문구 -->
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('error'))
+            alert('아이디 또는 비밀번호가 일치하지 않습니다.');
+    </script>
 </body>
 </html>

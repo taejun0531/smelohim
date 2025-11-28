@@ -25,23 +25,22 @@ public class SecurityUsersDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
 
-        Optional<Users> OPuser = usersRepository.findByUserId(userId);
-
-        if(OPuser.isEmpty())
-            return null;
-
-        Users user = OPuser.get();
+        Users user = usersRepository.findByUserId(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("해당 아이디를 가진 사용자를 찾을 수 없습니다 : " + userId));
 
         List<GrantedAuthority> authorities = new ArrayList<>();
-        if (user.getUserRole().equals("ADMIN")) {
-            authorities.add(new SimpleGrantedAuthority(Role.ADMIN.getValue()));
-        } else if (user.getUserRole().equals("USER")) {
-            authorities.add(new SimpleGrantedAuthority(Role.USER.getValue()));
+
+        // DB에는 "ADMIN", "USER", "AWAIT" 이 저장되어 있다고 가정
+        String role = user.getUserRole();
+
+        if ("ADMIN".equals(role)) {
+            authorities.add(new SimpleGrantedAuthority(Role.ADMIN.getValue())); // "ROLE_ADMIN"
+        } else if ("USER".equals(role)) {
+            authorities.add(new SimpleGrantedAuthority(Role.USER.getValue()));  // "ROLE_USER"
         } else {
-            authorities.add(new SimpleGrantedAuthority(Role.AWAIT.getValue()));
+            authorities.add(new SimpleGrantedAuthority(Role.AWAIT.getValue())); // "ROLE_AWAIT"
         }
 
         return new User(user.getUserId(), user.getUserPassword(), authorities);
     }
-
 }

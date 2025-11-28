@@ -1,49 +1,59 @@
 package com.site.elohim.controller;
 
 import com.site.elohim.dto.UpdateMemberRequest;
+import com.site.elohim.dto.DeleteMemberRequest;
 import com.site.elohim.model.Members;
 import com.site.elohim.service.MemberDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Controller
+@RequiredArgsConstructor
 public class MemberDetailsController {
 
-    private final MemberDetailsService service;
+    private final MemberDetailsService memberDetailsService;
 
-    public MemberDetailsController(MemberDetailsService service) { this.service = service; }
-
+    /**
+     * 멤버 상세 페이지
+     * ex) /admin/memberDetailsPage?memberId=3
+     */
     @GetMapping("/admin/memberDetailsPage")
-    public ModelAndView memberDetailsPage(@RequestParam Long memberId) {
-        ModelAndView mnv = new ModelAndView("memberDetailsPage");
+    public String memberDetailsPage(@RequestParam Long memberId, Model model) {
 
-        Optional<Members> member = service.findByMemberId(memberId);
-        if (member.isPresent()) {
-            mnv.addObject("member", member.get());
-        }
+        Optional<Members> detailMember = memberDetailsService.findByMemberId(memberId);
+        if (detailMember.isPresent())
+            model.addAttribute("member", detailMember.get());
+        else
+            model.addAttribute("member", null);
 
-        List<Members> cellLeaderList = service.getMembersCellLeader();
-        mnv.addObject("cellLeaderList", cellLeaderList);
+        List<Members> cellLeaderList = memberDetailsService.getMembersCellLeader();
+        model.addAttribute("cellLeaderList", cellLeaderList);
 
-        return mnv;
+        return "memberDetailsPage";
     }
 
+    /**
+     * 멤버 정보 수정
+     */
     @PostMapping("/admin/updateMember")
     @ResponseBody
     public boolean updateMember(@RequestBody UpdateMemberRequest req) {
-        return service.updateMember(req);
+        return memberDetailsService.updateMember(req);
     }
 
+    /**
+     * 멤버 삭제
+     * 요청 JSON: { "deleteMemberId": 3 }
+     */
     @PostMapping("/admin/deleteMember")
     @ResponseBody
-    public boolean deleteMember(@RequestBody Map<String, String> data) {
-        return service.deleteMember(Long.parseLong(data.get("deleteMemberId")));
+    public boolean deleteMember(@RequestBody DeleteMemberRequest request) {
+        return memberDetailsService.deleteMember(request.getDeleteMemberId());
     }
 
 }

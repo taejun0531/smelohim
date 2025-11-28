@@ -9,9 +9,9 @@ public enum Role {
     USER("ROLE_USER"),
     AWAIT("ROLE_AWAIT");
 
+    private final String value;
+
     Role(String value) {
         this.value = value;
     }
-
-    private String value;
 }

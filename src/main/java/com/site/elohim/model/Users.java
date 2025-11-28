@@ -4,10 +4,15 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
+@Table(
+        catalog = "smelohim",
+        name = "loginuser",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "unique_userId", columnNames = "userId")
+        }
+)
 @Getter
 @Setter
-@Table( catalog = "smelohim", name = "loginuser")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -17,14 +22,21 @@ public class Users {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String userId;
-    @Column
-    private String userPassword;
-    @Column
-    private String userName;
-    @Column
+    @Column(nullable = false)
     private String userRole;
-    @Column
+    @Column(nullable = false)
+    private String userId;
+    @Column(nullable = false)
+    private String userPassword;
+    @Column(nullable = false)
+    private String userName;
+
+    // 숫자 FK 그대로 유지
+    @Column(name = "memberId")
     private Long memberId;
+
+    // 실제 연관관계 (Members)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "memberId", insertable = false, updatable = false)
+    private Members member;
 }

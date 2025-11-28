@@ -1,5 +1,6 @@
 package com.site.elohim.service;
 
+import com.site.elohim.dto.UserAcceptRequest;
 import com.site.elohim.model.Members;
 import com.site.elohim.model.Users;
 import com.site.elohim.repository.MembersRepository;
@@ -14,55 +15,82 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserAcceptService {
 
     private final UsersRepository usersRepository;
     private final MembersRepository membersRepository;
 
-    public List<Users> getAllUser () {
+    public List<Users> getAllUser() {
         return usersRepository.findAll();
     }
 
-    public boolean existsByLeaderId(Long memberId) {
-        return !usersRepository.existsByMemberId(memberId); // 존재하지 않아야 true, 이미 존재하면 false
+    /**
+     * leaderId 에 해당하는 memberId를 이미 누가 사용 중인지 확인
+     * - true  : 아직 아무도 사용 안 함 (비어 있음)
+     * - false : 이미 사용 중
+     */
+    public boolean isLeaderIdEmpty(Long memberId) {
+        if (memberId == null)
+            return true;
+        return !usersRepository.existsByMemberId(memberId);
     }
 
+    /**
+     * 역할별 유저 목록 조회
+     * ex) "AWAIT", "USER", "ADMIN"
+     */
     public List<Users> findAllUserByRole(String role) {
         return usersRepository.findByUserRoleOrderByUserName(role);
     }
 
+    /**
+     * 셀 리더로 등록된 멤버 목록 조회
+     */
     public List<Members> getMembersCellLeader() {
         return membersRepository.findByCellLeaderStatusOrderByMemberNameAsc(true);
     }
 
+    /**
+     * 유저 삭제
+     */
     @Transactional
     public boolean deleteUser(Long id) {
         try {
             usersRepository.deleteById(id);
-            usersRepository.flush();                 // 강제로 delete SQL 실행
-            return !usersRepository.existsById(id);  // id가 없을 때 true 반환 시켜 삭제 완료되었다고 리턴해줌.
+            // FK 제약 오류 등은 flush 시점에 바로 터지도록
+            usersRepository.flush();
+            return !usersRepository.existsById(id);
         } catch (EmptyResultDataAccessException | DataIntegrityViolationException e) {
-            // 이미 없는 사용자 // FK 제약 등으로 삭제 불가
+            // 이미 없는 사용자 / FK 제약으로 삭제 불가
             return false;
         }
     }
 
+    /**
+     * 유저 승인 / 권한 변경 / memberId 연결
+     */
     @Transactional
-    public boolean updateUser(String Id, String userRole, String leaderId) {
-        Long LongId = Long.parseLong(Id);
+    public boolean updateUser(UserAcceptRequest request) {
 
-        if(usersRepository.findById(LongId).isEmpty())
+        Long userId = request.getId();
+        if (userId == null)
             return false;
 
-        Users user = usersRepository.findById(LongId).get();
-        user.setUserRole(userRole);
+        Users user = usersRepository.findById(userId).orElse(null);
+        if (user == null)
+            return false;
 
-        if(leaderId == null || leaderId.isEmpty())
+        // 권한 변경 (예: "AWAIT" -> "USER" or "ADMIN")
+        user.setUserRole(request.getUserRole());
+
+        // 셀 리더 memberId 연결/해제
+        if (request.getLeaderId() == null)
             user.setMemberId(null);
         else
-            user.setMemberId(Long.parseLong(leaderId));
+            user.setMemberId(request.getLeaderId());
 
+        // 영속성 컨텍스트에 의해 자동 flush
         return true;
     }
-
 }

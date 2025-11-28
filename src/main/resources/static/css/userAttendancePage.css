@@ -1,0 +1,335 @@
+/* === Elohim Youth · User Attendance (Fresh & Clean Green) ================= */
+
+:root{
+    --bg:#f3fff7;
+    --bg-accent-1:rgba(34,197,94,.06);
+    --bg-accent-2:rgba(16,185,129,.05);
+
+    --card:#ffffff;
+    --text:#0a1b13;
+    --muted:#2e5547;
+    --subtle:#3d6a5a;
+    --placeholder:#6f8b80;
+    --border:#cfeee0;
+
+    --brand:#22c55e;
+    --brand-dark:#16a34a;
+    --brand-weak:#eafff1;
+    --ring:34 197 94;
+
+    --radius:18px;
+    --shadow:0 10px 22px rgba(16,185,129,.10), 0 2px 6px rgba(2,44,34,.05);
+}
+
+body.dark{
+    --bg:#0a1511;
+    --bg-accent-1:rgba(34,197,94,.18);
+    --bg-accent-2:rgba(16,185,129,.14);
+
+    --card:#0e1f18;
+    --text:#f2fff8;
+    --muted:#d2f2e2;
+    --subtle:#b7e8d4;
+    --placeholder:#cfe9dc;
+    --border:#2a4a3e;
+
+    --brand:#28d368;
+    --brand-dark:#1fb25a;
+    --brand-weak:rgba(40,211,104,.14);
+
+    --shadow:0 12px 26px rgba(0,0,0,.55), 0 2px 8px rgba(0,0,0,.35);
+}
+
+*{ box-sizing:border-box; }
+html, body{ height:100%; }
+body{
+    margin:0; color:var(--text);
+    background:
+            radial-gradient(1000px 600px at 90% -10%, var(--bg-accent-1), transparent 60%),
+            radial-gradient(900px 520px at -10% 110%, var(--bg-accent-2), transparent 60%),
+            var(--bg);
+    font-family:"Noto Sans KR", system-ui, -apple-system, Segoe UI, Roboto, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    line-height:1.55;
+    display:flex; flex-direction:column; align-items:center;
+    padding:5vh 16px 8vh;
+    transition: background-color .25s ease, color .25s ease;
+}
+
+/* Topbar */
+.topbar{
+    width:min(980px,94vw);
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:12px;
+}
+.brand{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:8px 14px;
+    font-weight:800; letter-spacing:.2px;
+    color:var(--brand-dark);
+    background:linear-gradient(180deg,#effff6,#ffffff);
+    border:1px solid var(--border);
+    border-radius:999px;
+    box-shadow:0 4px 12px rgba(16,185,129,.10);
+}
+body.dark .brand{
+    color:#e6fff2;
+    background:linear-gradient(180deg,rgba(23,46,38,.9),rgba(18,36,30,.9));
+    border-color:var(--border);
+}
+.moveMainPageText{
+    margin-left:auto; margin-right:8px;
+    text-decoration:none; font-weight:800; font-size:13px;
+    color:#0a1b13;
+    background:#bdf4d3;
+    border:1px solid #9fecc4;
+    border-radius:999px;
+    padding:6px 10px;
+    box-shadow:0 3px 8px rgba(16,185,129,.12);
+}
+.moveMainPageText:hover{ filter:brightness(1.05); }
+body.dark .moveMainPageText{ color:#08110e; }
+
+.theme-toggle{
+    padding:8px 12px;
+    border:none; border-radius:999px; cursor:pointer;
+    font-weight:800;
+    color:#0a1b13;
+    background:#bdf4d3;
+    box-shadow:0 4px 12px rgba(var(--ring), .18);
+    transition: filter .2s ease, transform .05s ease;
+}
+.theme-toggle:hover{ filter:brightness(1.05); }
+.theme-toggle:active{ transform:translateY(1px); }
+body.dark .theme-toggle{
+    color:#0a1511;
+    background:#9cf0c3;
+}
+
+/* Page header */
+.page-header{
+    width:min(980px,94vw);
+    margin-bottom:10px;
+}
+.page-header h1{
+    margin:0;
+    font-size:22px; font-weight:900; letter-spacing:.2px;
+}
+.page-header p{
+    margin:4px 0 0;
+    font-size:13px; color:var(--subtle);
+}
+
+/* Month card */
+.month-card{
+    width:min(980px,94vw);
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:10px 14px;
+    margin-bottom:12px;
+}
+.month-nav{
+    display:flex; align-items:center; justify-content:center;
+    gap:16px;
+}
+.month-btn{
+    width:34px; height:34px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background:#ffffff;
+    cursor:pointer;
+    font-weight:900;
+    box-shadow:0 4px 10px rgba(16,185,129,.08);
+}
+.month-btn:hover{ filter:brightness(1.04); }
+body.dark .month-btn{
+    background:#0f201a;
+}
+.month-label{
+    font-size:18px; font-weight:900; letter-spacing:.4px;
+}
+.month-note{
+    margin-top:6px;
+    font-size:12px;
+    color:var(--muted);
+    text-align:center;
+}
+
+/* Card */
+.card{
+    width:min(980px,94vw);
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:14px 14px 12px;
+    position:relative;
+}
+.card-accent{
+    position:absolute; inset:0 0 auto 0;
+    height:6px;
+    background:linear-gradient(90deg, rgba(34,197,94,.25), rgba(34,197,94,0));
+}
+.card-header-row{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:8px;
+}
+.table-title{
+    display:flex; align-items:center; gap:8px;
+    font-size:16px; font-weight:900;
+}
+.table-title .dot{
+    width:10px; height:10px;
+    border-radius:50%;
+    background:var(--brand);
+    box-shadow:0 0 0 6px rgba(var(--ring), .18);
+}
+
+/*
+.legend{
+    display:flex; gap:6px; flex-wrap:wrap;
+}
+.legend-pill{
+    font-size:11px; font-weight:800;
+    padding:4px 8px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background:var(--brand-weak);
+}
+.legend-worship::before,
+.legend-cell::before,
+.legend-memo::before{
+    content:"";
+    display:inline-block;
+    width:6px; height:6px;
+    border-radius:50%;
+    margin-right:4px;
+}
+.legend-worship::before{ background:#22c55e; }
+.legend-cell::before{ background:#3b82f6; }
+.legend-memo::before{ background:#f97316; }
+*/
+
+/* Table */
+.table-wrapper{
+    width:100%;
+    overflow-x:auto;
+}
+table{
+    width:100%;
+    border-collapse:separate;
+    border-spacing:0;
+    border-radius:12px;
+    overflow:hidden;
+    border:1px solid var(--border);
+}
+thead th{
+    padding:8px 10px;
+    text-align:center;
+    background:linear-gradient(180deg,#f7fff9,#ffffff);
+    border-bottom:1px solid var(--border);
+    font-size:13px; font-weight:900;
+}
+body.dark thead th{
+    background:linear-gradient(180deg,#0e221b,#10241d);
+}
+.col-name{
+    min-width:110px;
+    text-align:left;
+}
+tbody td{
+    padding:8px 10px;
+    border-bottom:1px solid var(--border);
+    font-size:13px;
+}
+tbody tr:nth-child(even) td{
+    background:rgba(34,197,94,.03);
+}
+tbody tr:hover td{
+    background:rgba(34,197,94,.08);
+}
+body.dark tbody tr:nth-child(even) td{
+    background:rgba(41,211,106,.10);
+}
+.member-name{
+    font-weight:800;
+}
+
+/* Checkbox & memo cells */
+.attend-cell{
+    text-align:center;
+}
+.attend-checkbox{
+    width:16px; height:16px;
+    cursor:pointer;
+    accent-color:#22c55e; /* 체크 됐을 때 색 지정 */
+}
+
+.memo-cell{
+    min-width:130px;
+}
+.memo-input{
+    width:100%;
+    padding:4px 6px;
+    font-size:12px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:rgba(255,255,255,.7);
+    outline:none;
+}
+.memo-input::placeholder{
+    color:var(--placeholder);
+}
+.memo-input:focus{
+    border-color:var(--brand);
+    box-shadow:0 0 0 1px rgba(var(--ring), .35);
+    background:#ffffff;
+}
+
+/* Footer */
+.card-footer{
+    margin-top:10px;
+}
+.help-text{
+    margin:0;
+    font-size:12px;
+    color:var(--muted);
+}
+
+/* Responsive */
+@media (max-width: 640px){
+    .col-name{
+        min-width:90px;
+    }
+    .memo-cell{
+        min-width:110px;
+    }
+}
+
+/* 버튼 공통 스타일 */
+.btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:8px 14px;
+    border-radius:999px;
+    border:1px solid transparent;
+    font-weight:800;
+    font-size:14px;
+    cursor:pointer;
+    text-decoration:none;
+}
+
+/* 초록 메인 버튼 */
+.btn.primary{
+    color:#ffffff;
+    background:linear-gradient(180deg,var(--brand),var(--brand-dark));
+    box-shadow:0 8px 18px rgba(var(--ring), .26);
+}
+.btn.primary:hover{
+    filter:brightness(1.05);
+}
+.btn.primary:active{
+    transform:translateY(1px);
+}

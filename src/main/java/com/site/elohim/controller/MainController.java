@@ -1,43 +1,49 @@
 package com.site.elohim.controller;
 
-import org.springframework.security.core.context.SecurityContextHolder;
+import com.site.elohim.model.Role;
+import com.site.elohim.service.MainService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.servlet.ModelAndView;
-
 
 @Controller
+@RequiredArgsConstructor
+@Slf4j
 public class MainController {
 
+    private final MainService mainService;
+
     @GetMapping("/")
-    public ModelAndView home(Model model) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    public String home(@AuthenticationPrincipal UserDetails user, Model model) {
 
-        if (!(principal instanceof UserDetails))
-            return new ModelAndView("/loginPage");
-
-        UserDetails user = (UserDetails) principal;
-        String name = user.getUsername();
-        String authorities = user.getAuthorities().toArray()[0].toString();
-
-        ModelAndView mnv;
-        if(authorities.contains("ROLE_ADMIN")) { 
-            mnv = new ModelAndView("/mainPage_admin");
-            mnv.addObject("username", name);
-        }else if(authorities.contains("ROLE_USER")) {
-            mnv = new ModelAndView("/mainPage_user");
-            mnv.addObject("username", name);
-        }else if(authorities.contains("ROLE_AWAIT")) {
-            mnv = new ModelAndView("/mainPage_await");
-            mnv.addObject("username", name);
-        }else {
-            System.out.println(authorities + " mainController() 오류");
-            mnv = new ModelAndView("/loginPage");
+        // 인증 안된 경우
+        if (user == null) {
+            log.debug("Unauthenticated access to '/', redirect to loginPage");
+            return "redirect:/loginPage";
         }
 
-        return mnv;
+        // user.getUsername() => userId를 반환
+        String username = mainService.getUsernameByUserId(user.getUsername());
+        model.addAttribute("username", username);
+
+        if (hasRole(user, Role.ADMIN.getValue()))
+            return "mainPage_admin";
+        if (hasRole(user, Role.USER.getValue()))
+            return "mainPage_user";
+        if (hasRole(user, Role.AWAIT.getValue()))
+            return "mainPage_await";
+
+        // 정의되지 않은 ROLE인 경우: 로그 남기고 로그인 페이지로
+        log.warn("Unknown roles for user {}: {}", username, user.getAuthorities());
+        return "redirect:/loginPage";
     }
 
+    private boolean hasRole(UserDetails user, String roleValue) {
+        return user.getAuthorities().stream()
+                .anyMatch(a -> roleValue.equals(a.getAuthority()));
+    }
 }

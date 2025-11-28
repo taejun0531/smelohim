@@ -1,7 +1,3 @@
-/* /js/userAcceptPage.js — 팝오버 + 권한변경 (기존 유지)
-   ▶ 변경점: openEditPopup 제거 X, 대신 deleteUser 추가
-*/
-
 const API_URL_ACCEPT = "/admin/accept_user";
 const API_URL_LEADERS = "/admin/getCellLeaderInfo";
 const API_URL_DELETE = "/admin/delete_user";
@@ -12,6 +8,7 @@ let cellLeaderListCache = null;
 let cellLeaderListLoading = null;
 
 const _runningByEl = new WeakMap();
+
 function isReentrant(el, windowMs = 400){
     const now = Date.now();
     const last = _runningByEl.get(el) || 0;
@@ -20,6 +17,7 @@ function isReentrant(el, windowMs = 400){
     setTimeout(()=>_runningByEl.delete(el), windowMs);
     return false;
 }
+
 const isActivePill = (el) => !!(el && el.classList && el.classList.contains("active"));
 
 function findSectionByTitle(prefixText){

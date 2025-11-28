@@ -1,73 +1,77 @@
 package com.site.elohim.controller;
 
+import com.site.elohim.dto.UserAcceptRequest;
+import com.site.elohim.dto.UserDeleteRequest;
+import com.site.elohim.dto.LeaderIdCheckRequest;
 import com.site.elohim.model.Members;
 import com.site.elohim.model.Users;
 import com.site.elohim.service.UserAcceptService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Controller
+@RequiredArgsConstructor
 public class UserAcceptController {
 
-    private final UserAcceptService service;
+    private final UserAcceptService userAcceptService;
 
-    public UserAcceptController(UserAcceptService service) {
-        this.service = service;
-    }
-
+    /**
+     * 사용자 승인 화면
+     */
     @GetMapping("/admin/userAcceptPage")
-    public ModelAndView userAcceptPage(Model model) {
-        ModelAndView mnv = new ModelAndView("/userAcceptPage");
+    public String userAcceptPage(Model model) {
 
-        List<Users> awaitList = service.findAllUserByRole("AWAIT");
-        List<Users> cellLeaderList = service.findAllUserByRole("USER");
-        List<Users> adminList = service.findAllUserByRole("ADMIN");
+        List<Users> awaitList      = userAcceptService.findAllUserByRole("AWAIT");
+        List<Users> cellLeaderList = userAcceptService.findAllUserByRole("USER");
+        List<Users> adminList      = userAcceptService.findAllUserByRole("ADMIN");
 
-        mnv.addObject("awaitList", awaitList);
-        mnv.addObject("cellLeaderList", cellLeaderList);
-        mnv.addObject("adminList", adminList);
+        model.addAttribute("awaitList", awaitList);
+        model.addAttribute("cellLeaderList", cellLeaderList);
+        model.addAttribute("adminList", adminList);
 
-        return mnv;
+        // userAcceptPage.html
+        return "userAcceptPage";
     }
 
+    /**
+     * 셀 리더로 연결할 memberId 가 이미 다른 유저에 매핑되어 있는지 확인
+     * - 비어 있으면 true
+     * - 이미 사용 중이면 false
+     */
     @PostMapping("/admin/isEmptyLeaderId")
     @ResponseBody
-    public boolean isEmptyLeaderId(@RequestBody Map<String, String> data) {
-        Long leaderId = Long.parseLong(data.get("leaderId"));
-        return service.existsByLeaderId(leaderId); // 이미 있는 경우 false, 비어 있는 경우 true
+    public boolean isEmptyLeaderId(@RequestBody LeaderIdCheckRequest request) {
+        return userAcceptService.isLeaderIdEmpty(request.getLeaderId());
     }
 
+    /**
+     * 대기 유저 승인 / 권한 변경 / memberId 연결
+     */
     @PostMapping("/admin/accept_user")
     @ResponseBody
-    public boolean acceptUser(@RequestBody Map<String, String> data) {
-        String id = data.get("id");
-        String userRole = data.get("userRole");
-        String leaderId = data.get("leaderId");
-
-        return service.updateUser(id, userRole, leaderId);
+    public boolean acceptUser(@RequestBody UserAcceptRequest request) {
+        return userAcceptService.updateUser(request);
     }
 
+    /**
+     * 셀 리더로 등록된 멤버 목록 조회
+     */
     @PostMapping("/admin/getCellLeaderInfo")
     @ResponseBody
     public List<Members> getCellLeaderInfo() {
-
-        return service.getMembersCellLeader();
+        return userAcceptService.getMembersCellLeader();
     }
 
+    /**
+     * 유저 삭제
+     */
     @PostMapping("/admin/delete_user")
     @ResponseBody
-    public boolean deleteUser(@RequestBody Map<String, String> data) {
-        Long deleteId = Long.parseLong(data.get("deleteId"));
-
-        return service.deleteUser(deleteId);
+    public boolean deleteUser(@RequestBody UserDeleteRequest request) {
+        return userAcceptService.deleteUser(request.getDeleteId());
     }
-
 }

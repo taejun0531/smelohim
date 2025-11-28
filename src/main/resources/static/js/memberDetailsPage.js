@@ -156,7 +156,7 @@
         if (!confirm("🚨 " + message))
             return;
 
-        if (!confirm(`❗ "${memberName}" 청년의 정보가 모두 삭제됩니다. ❗\n정말로 삭제하시겠습니까?`))
+        if (!confirm(`❗ "${memberName}" 청년의 인적사항, 출석체크 등 모든 정보가 모두 삭제됩니다. ❗\n정말로 삭제하시겠습니까?`))
             return;
 
         fetch("/admin/deleteMember", {
@@ -273,7 +273,6 @@
                 .catch(() => {
                     alert("서버 요청 중 오류가 발생했습니다.");
                 });
-            return;
         }
     });
 
