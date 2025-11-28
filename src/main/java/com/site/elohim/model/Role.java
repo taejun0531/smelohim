@@ -1,6 +1,5 @@
 package com.site.elohim.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter

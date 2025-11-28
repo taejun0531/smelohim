@@ -40,6 +40,6 @@ public class Attendances {
     private boolean worshipStatus;
     @Column(nullable = false)
     private boolean cellStatus;
-    @Column(length = 255)
+    @Column
     private String attendanceMemo;
 }

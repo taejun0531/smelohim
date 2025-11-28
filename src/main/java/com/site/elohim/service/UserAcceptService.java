@@ -21,10 +21,6 @@ public class UserAcceptService {
     private final UsersRepository usersRepository;
     private final MembersRepository membersRepository;
 
-    public List<Users> getAllUser() {
-        return usersRepository.findAll();
-    }
-
     /**
      * leaderId 에 해당하는 memberId를 이미 누가 사용 중인지 확인
      * - true  : 아직 아무도 사용 안 함 (비어 있음)
