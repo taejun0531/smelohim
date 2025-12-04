@@ -27,8 +27,7 @@ public class PersonalDataController {
     @GetMapping("/admin/personalDataPage")
     public String personalDataPage(@AuthenticationPrincipal UserDetails user, Model model) {
 
-        if (user != null)
-            model.addAttribute("username", user.getUsername());
+        model.addAttribute("username", user.getUsername());
 
         // 전체 멤버 목록
         List<Members> memberList = personalDataService.getAllMember();
@@ -46,13 +45,14 @@ public class PersonalDataController {
      * - 요청은 JSON으로 오지만, 응답은 personalDataPage.html 렌더링된 전체 HTML
      */
     @PostMapping("/admin/personalDataPage")
-    public String findPersonalDataPage(@AuthenticationPrincipal UserDetails user, @RequestBody PersonalDataSearchRequest req, Model model) {
+    public String findPersonalDataPage(@AuthenticationPrincipal UserDetails user,
+                                       @RequestBody PersonalDataSearchRequest req,
+                                       Model model) {
 
-        if (user != null)
-            model.addAttribute("username", user.getUsername());
+        model.addAttribute("username", user.getUsername());
 
         String category = req.getFindCategory();
-        List<Members> memberList = List.of();  // 기본 빈 리스트
+        List<Members> memberList;  // 기본 빈 리스트 대신 바로 switch에서 할당
 
         switch (category) {
             case "name" -> {
@@ -72,6 +72,8 @@ public class PersonalDataController {
                 Long cellKey = (cellLeader != null && !cellLeader.isBlank()) ? Long.parseLong(cellLeader) : null;
                 if (cellKey != null)
                     memberList = personalDataService.getMembersByCellKey(cellKey);
+                else
+                    memberList = List.of();
             }
             case "baptism" -> {
                 String baptism = req.getFindBaptism();
@@ -177,5 +179,4 @@ public class PersonalDataController {
 
         return personalDataService.createMember(member);
     }
-
 }

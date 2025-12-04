@@ -29,8 +29,6 @@ public class AttendanceController {
 
     @GetMapping("/user/attendancePage")
     public String attendancePage(@AuthenticationPrincipal UserDetails user, Model model) {
-        if (user == null)
-            return "redirect:/loginPage";
 
         String loginUserId = user.getUsername(); // userId
 
@@ -48,17 +46,12 @@ public class AttendanceController {
 
     @PostMapping("/user/updateAttendance")
     @ResponseBody
-    public boolean updateAttendance(@RequestBody AttendanceSaveRequest request, @AuthenticationPrincipal UserDetails user) {
-        // 1) 인증 여부 체크
-        // 인증이 안 된 상태에서 호출된 경우 → 보안상 로그만 남기고 false 리턴
-        if (user == null) {
-            log.warn("[Attendance] unauthenticated request to /user/updateAttendance");
-            return false;
-        }
+    public boolean updateAttendance(@RequestBody AttendanceSaveRequest request,
+                                    @AuthenticationPrincipal UserDetails user) {
 
         final String loginUserId = user.getUsername();
 
-        // 2) 요청 바디 기본 검증
+        // 요청 바디 기본 검증
         if (request == null || request.getItems() == null || request.getItems().isEmpty()) {
             log.debug("[Attendance] empty request from userId={}", loginUserId);
             return false;
@@ -84,13 +77,22 @@ public class AttendanceController {
     // 조회용: 날짜 + 멤버 집합 기반, Map<memberId, AttendanceItemDto> 반환
     @PostMapping("/user/loadAttendance")
     @ResponseBody
-    public Map<Long, AttendanceItemDto> loadAttendance(@RequestBody AttendanceLoadRequest request, @AuthenticationPrincipal UserDetails user) {
-        if (user == null || request == null || request.getAttendanceDate() == null
-                || request.getAttendingMemberIdList() == null || request.getAttendingMemberIdList().isEmpty())
+    public Map<Long, AttendanceItemDto> loadAttendance(@RequestBody AttendanceLoadRequest request,
+                                                       @AuthenticationPrincipal UserDetails user) {
+
+        if (request == null ||
+                request.getAttendanceDate() == null ||
+                request.getAttendingMemberIdList() == null ||
+                request.getAttendingMemberIdList().isEmpty()) {
             return Collections.emptyMap();
+        }
 
         String loginUserId = user.getUsername();
 
-        return attendanceService.getAttendanceMapForDateAndMembers(loginUserId, request.getAttendanceDate(), request.getAttendingMemberIdList());
+        return attendanceService.getAttendanceMapForDateAndMembers(
+                loginUserId,
+                request.getAttendanceDate(),
+                request.getAttendingMemberIdList()
+        );
     }
 }

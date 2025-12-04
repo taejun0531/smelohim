@@ -20,12 +20,6 @@ public class MainController {
     @GetMapping("/")
     public String home(@AuthenticationPrincipal UserDetails user, Model model) {
 
-        // 인증 안된 경우
-        if (user == null) {
-            log.debug("Unauthenticated access to '/', redirect to loginPage");
-            return "redirect:/loginPage";
-        }
-
         // user.getUsername() => userId를 반환
         String username = mainService.getUsernameByUserId(user.getUsername());
         model.addAttribute("username", username);

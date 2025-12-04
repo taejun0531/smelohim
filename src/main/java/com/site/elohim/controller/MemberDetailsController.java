@@ -10,7 +10,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 @RequiredArgsConstructor
@@ -25,11 +24,8 @@ public class MemberDetailsController {
     @GetMapping("/admin/memberDetailsPage")
     public String memberDetailsPage(@RequestParam Long memberId, Model model) {
 
-        Optional<Members> detailMember = memberDetailsService.findByMemberId(memberId);
-        if (detailMember.isPresent())
-            model.addAttribute("member", detailMember.get());
-        else
-            model.addAttribute("member", null);
+        Members member = memberDetailsService.findByMemberId(memberId).orElse(null);
+        model.addAttribute("member", member);
 
         List<Members> cellLeaderList = memberDetailsService.getMembersCellLeader();
         model.addAttribute("cellLeaderList", cellLeaderList);
@@ -55,5 +51,4 @@ public class MemberDetailsController {
     public boolean deleteMember(@RequestBody DeleteMemberRequest request) {
         return memberDetailsService.deleteMember(request.getDeleteMemberId());
     }
-
 }
