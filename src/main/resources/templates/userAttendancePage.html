@@ -21,28 +21,28 @@
     <h1 th:text="${cellName + ' 출석부'}"></h1>
 </div>
 
-<!-- Month navigator -->
+<!-- Week navigator -->
 <div class="month-card">
     <div class="month-nav">
-        <button id="prevMonth" class="month-btn" type="button" aria-label="이전 달로 이동">◀</button>
+        <!-- id는 그대로 사용 (prevMonth / nextMonth) -->
+        <button id="prevMonth" class="month-btn" type="button" aria-label="이전 주로 이동">◀</button>
 
         <div class="month-label">
             <span id="yearLabel">0000</span>년
             <span id="monthLabel">00</span>월
+            <span id="dayLabel">00</span>일(주일)
         </div>
 
-        <button id="nextMonth" class="month-btn" type="button" aria-label="다음 달로 이동">▶</button>
+        <button id="nextMonth" class="month-btn" type="button" aria-label="다음 주로 이동">▶</button>
     </div>
 
     <div class="month-note">
-        선택된 달의 <strong>주일(일요일)</strong>만 표시됩니다.
+        선택된 <strong>날짜</strong>를 확인 후 <strong>출석 체크</strong>해주세요.
     </div>
 </div>
 
 <!-- Attendance table -->
 <div class="card">
-    <div class="card-accent"></div>
-
     <div class="card-header-row">
         <div class="table-title">
             <span class="dot"></span>
@@ -53,15 +53,31 @@
         </button>
     </div>
 
+    <!-- ✅ 요약 박스 3개 (셀모임 / 예배 / 결석) -->
+    <div class="summary-row">
+        <div class="summary-chip summary-absent">
+            <span class="summary-label">결석</span>
+            <span id="absentCount" class="summary-value">0</span>
+        </div>
+        <div class="summary-chip summary-worship">
+            <span class="summary-label">예배</span>
+            <span id="worshipCount" class="summary-value">0</span>
+        </div>
+        <div class="summary-chip summary-cell">
+            <span class="summary-label">셀모임</span>
+            <span id="cellCount" class="summary-value">0</span>
+        </div>
+    </div>
+
     <div class="table-wrapper">
         <table id="attendanceTable">
             <thead>
             <tr id="headerRow1">
                 <th rowspan="2" class="col-name">이름</th>
-                <!-- JS에서 주일 날짜 th(colspan=3) 삽입 -->
+                <!-- JS에서 해당 주의 주일 날짜(한 칸, colspan=3) 삽입 -->
             </tr>
             <tr id="headerRow2">
-                <!-- JS에서 각 날짜별 '예배'/'셀'/'메모' 헤더 삽입 -->
+                <!-- JS에서 '예배' / '셀' / '메모' 헤더 삽입 -->
             </tr>
             </thead>
             <tbody id="attendanceBody">
@@ -70,7 +86,7 @@
                 th:data-member-id="${member.id}"
                 th:data-member-name="${member.memberName}">
                 <td class="member-name" th:text="${member.memberName}"></td>
-                <!-- JS에서 해당 월의 주일 개수만큼 셀(예배/셀/메모)을 추가 -->
+                <!-- JS에서 해당 주의 주일에 대한 예배/셀/메모 셀 추가 -->
             </tr>
             </tbody>
         </table>

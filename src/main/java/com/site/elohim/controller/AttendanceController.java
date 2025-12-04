@@ -1,16 +1,26 @@
 package com.site.elohim.controller;
 
+import com.site.elohim.dto.AttendanceItemDto;
+import com.site.elohim.dto.AttendanceLoadRequest;
+import com.site.elohim.dto.AttendanceSaveRequest;
 import com.site.elohim.model.Members;
 import com.site.elohim.service.AttendanceService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class AttendanceController {
@@ -19,8 +29,6 @@ public class AttendanceController {
 
     @GetMapping("/user/attendancePage")
     public String attendancePage(@AuthenticationPrincipal UserDetails user, Model model) {
-
-        // 혹시 인증 정보가 없으면 로그인 페이지로 보내도 됨 (SecurityConfig에 따라 조정)
         if (user == null)
             return "redirect:/loginPage";
 
@@ -38,4 +46,51 @@ public class AttendanceController {
         return "userAttendancePage";
     }
 
+    @PostMapping("/user/updateAttendance")
+    @ResponseBody
+    public boolean updateAttendance(@RequestBody AttendanceSaveRequest request, @AuthenticationPrincipal UserDetails user) {
+        // 1) 인증 여부 체크
+        // 인증이 안 된 상태에서 호출된 경우 → 보안상 로그만 남기고 false 리턴
+        if (user == null) {
+            log.warn("[Attendance] unauthenticated request to /user/updateAttendance");
+            return false;
+        }
+
+        final String loginUserId = user.getUsername();
+
+        // 2) 요청 바디 기본 검증
+        if (request == null || request.getItems() == null || request.getItems().isEmpty()) {
+            log.debug("[Attendance] empty request from userId={}", loginUserId);
+            return false;
+        }
+
+        try {
+            attendanceService.updateAttendanceItems(request.getItems());
+            log.info("[Attendance] successfully updated attendance. userId={}, itemCount={}",
+                    loginUserId, request.getItems().size());
+            return true;
+        } catch (IllegalArgumentException e) {
+            // 서비스 계층에서 유효하지 않은 입력에 대해 IllegalArgumentException 던지는 경우
+            log.warn("[Attendance] invalid attendance request. userId={}, reason={}",
+                    loginUserId, e.getMessage());
+            return false;
+        } catch (Exception e) {
+            // 예기치 못한 모든 에러 방어 (DB 오류 등)
+            log.error("[Attendance] failed to update attendance. userId={}", loginUserId, e);
+            return false;
+        }
+    }
+
+    // 조회용: 날짜 + 멤버 집합 기반, Map<memberId, AttendanceItemDto> 반환
+    @PostMapping("/user/loadAttendance")
+    @ResponseBody
+    public Map<Long, AttendanceItemDto> loadAttendance(@RequestBody AttendanceLoadRequest request, @AuthenticationPrincipal UserDetails user) {
+        if (user == null || request == null || request.getAttendanceDate() == null
+                || request.getAttendingMemberIdList() == null || request.getAttendingMemberIdList().isEmpty())
+            return Collections.emptyMap();
+
+        String loginUserId = user.getUsername();
+
+        return attendanceService.getAttendanceMapForDateAndMembers(loginUserId, request.getAttendanceDate(), request.getAttendingMemberIdList());
+    }
 }

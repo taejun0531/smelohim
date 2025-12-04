@@ -119,7 +119,7 @@ body.dark .theme-toggle{
     font-size:13px; color:var(--subtle);
 }
 
-/* Month card */
+/* Month(Week) card */
 .month-card{
     width:min(980px,94vw);
     background:var(--card);
@@ -158,18 +158,13 @@ body.dark .month-btn{
 
 /* Card */
 .card{
-    width:min(980px,94vw);
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    box-shadow:var(--shadow);
-    padding:14px 14px 12px;
-    position:relative;
-}
-.card-accent{
-    position:absolute; inset:0 0 auto 0;
-    height:6px;
-    background:linear-gradient(90deg, rgba(34,197,94,.25), rgba(34,197,94,0));
+    width: min(980px, 94vw);
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px;
+    border-top: 6px solid rgba(34,197,94,.25); /* ← card-accent 대체 */
 }
 .card-header-row{
     display:flex; align-items:center; justify-content:space-between;
@@ -186,43 +181,71 @@ body.dark .month-btn{
     box-shadow:0 0 0 6px rgba(var(--ring), .18);
 }
 
-/*
-.legend{
-    display:flex; gap:6px; flex-wrap:wrap;
+/* ✅ Summary chips (셀모임 / 예배 / 결석) */
+.summary-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:10px;
+    flex-wrap:wrap;
 }
-.legend-pill{
-    font-size:11px; font-weight:800;
-    padding:4px 8px;
+.summary-chip{
+    flex:1 1 0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:8px 12px;
     border-radius:999px;
     border:1px solid var(--border);
-    background:var(--brand-weak);
+    font-size:13px;
+    font-weight:800;
 }
-.legend-worship::before,
-.legend-cell::before,
-.legend-memo::before{
-    content:"";
-    display:inline-block;
-    width:6px; height:6px;
-    border-radius:50%;
-    margin-right:4px;
+
+/* 셀모임 - 초록 느낌 */
+.summary-cell{
+    background:rgba(22,163,74,.08);
+    border-color:rgba(22,163,74,.28);
 }
-.legend-worship::before{ background:#22c55e; }
-.legend-cell::before{ background:#3b82f6; }
-.legend-memo::before{ background:#f97316; }
-*/
+.summary-cell .summary-label{ color:#15803d; }
+.summary-cell .summary-value{ color:#14532d; font-size:16px; }
+
+/* 예배 - 파란 느낌 */
+.summary-worship{
+    background:rgba(37,99,235,.08);
+    border-color:rgba(37,99,235,.28);
+}
+.summary-worship .summary-label{ color:#1d4ed8; }
+.summary-worship .summary-value{ color:#1e3a8a; font-size:16px; }
+
+/* 결석 - 빨간 느낌 */
+.summary-absent{
+    background:rgba(220,38,38,.08);
+    border-color:rgba(220,38,38,.28);
+}
+.summary-absent .summary-label{ color:#b91c1c; }
+.summary-absent .summary-value{ color:#7f1d1d; font-size:16px; }
+
+body.dark .summary-cell{
+    background:rgba(22,163,74,.22);
+}
+body.dark .summary-worship{
+    background:rgba(37,99,235,.22);
+}
+body.dark .summary-absent{
+    background:rgba(220,38,38,.28);
+}
 
 /* Table */
-.table-wrapper{
-    width:100%;
-    overflow-x:auto;
+.table-wrapper {
+    width: 100%;
+    border-radius: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    border: 1px solid var(--border);
 }
 table{
     width:100%;
     border-collapse:separate;
     border-spacing:0;
-    border-radius:12px;
-    overflow:hidden;
-    border:1px solid var(--border);
 }
 thead th{
     padding:8px 10px;
@@ -263,7 +286,7 @@ body.dark tbody tr:nth-child(even) td{
 .attend-checkbox{
     width:16px; height:16px;
     cursor:pointer;
-    accent-color:#22c55e; /* 체크 됐을 때 색 지정 */
+    accent-color:#22c55e;
 }
 
 .memo-cell{
