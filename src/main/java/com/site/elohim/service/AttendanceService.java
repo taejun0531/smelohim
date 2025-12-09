@@ -1,6 +1,8 @@
 package com.site.elohim.service;
 
 import com.site.elohim.dto.AttendanceItemDto;
+import com.site.elohim.dto.AttendanceStatsItemDto;
+import com.site.elohim.dto.CellSummaryDto;
 import com.site.elohim.model.Attendances;
 import com.site.elohim.model.Members;
 import com.site.elohim.model.Users;
@@ -44,7 +46,6 @@ public class AttendanceService {
      */
     @Transactional
     public void updateAttendanceItems(List<AttendanceItemDto> items) {
-        // 조금 더 실무처럼 바꿔보기.
 
         if (items == null || items.isEmpty())
             return;
@@ -116,7 +117,7 @@ public class AttendanceService {
         List<Attendances> attendanceList =
                 attendancesRepository.findByAttendanceDateAndMemberIdIn(attendanceDate, targetIdList);
 
-        // 5) Map<Long, List<AttendanceItemDto>> 로 변환
+        // 5) Map<Long, AttendanceItemDto> 로 변환
         Map<Long, AttendanceItemDto> result = new HashMap<>();
 
         for (Attendances a : attendanceList) {
@@ -132,5 +133,150 @@ public class AttendanceService {
         }
 
         return result;
+    }
+
+    // ======================== ADMIN (임원용) 서비스 메서드 ========================
+
+    /**
+     * [임원용] 전체 셀 목록 가져오기 (셀리더 기준)
+     */
+    public List<CellSummaryDto> getAllCellsForAdmin() {
+
+        List<Members> leaders =
+                membersRepository.findByCellLeaderStatusOrderByMemberNameAsc(true);
+
+        if (leaders == null || leaders.isEmpty())
+            return Collections.emptyList();
+
+        List<CellSummaryDto> result = new ArrayList<>();
+
+        for (Members m : leaders) {
+            CellSummaryDto dto = new CellSummaryDto();
+            dto.setCellKey(m.getId()); // 셀리더 member.id 를 cellKey로 사용
+
+            // cellName이 비어있으면 "이름 + 셀" 형태로 보완
+            String cellName = m.getCellName();
+            if (cellName == null || cellName.isBlank()) {
+                cellName = m.getMemberName() + "셀";
+            }
+
+            dto.setCellName(cellName);
+            result.add(dto);
+        }
+
+        return result;
+    }
+
+    /**
+     * [임원용] 특정 셀(cellKey)의 셀원 목록
+     */
+    public List<Members> getCellMembersByCellKey(Long cellKey) {
+        if (cellKey == null)
+            return Collections.emptyList();
+
+        return membersRepository.findByCellKeyOrderByMemberNameAsc(cellKey);
+    }
+
+    /**
+     * [임원용] 날짜 + 멤버 집합 기반 출석 Map
+     * - 리더 필터 없이, 요청된 memberIdList 전체에 대해 조회
+     */
+    public Map<Long, AttendanceItemDto> getAttendanceMapForAdmin(
+            LocalDate attendanceDate, List<Long> requestedMemberIdList) {
+
+        if (attendanceDate == null || requestedMemberIdList == null || requestedMemberIdList.isEmpty())
+            return Collections.emptyMap();
+
+        List<Long> targetIdList = requestedMemberIdList.stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (targetIdList.isEmpty())
+            return Collections.emptyMap();
+
+        List<Attendances> attendanceList =
+                attendancesRepository.findByAttendanceDateAndMemberIdIn(attendanceDate, targetIdList);
+
+        Map<Long, AttendanceItemDto> result = new HashMap<>();
+
+        for (Attendances a : attendanceList) {
+            Long memberId = a.getMemberId();
+            AttendanceItemDto dto = new AttendanceItemDto();
+            dto.setMemberId(memberId);
+            dto.setAttendanceDate(a.getAttendanceDate());
+            dto.setWorshipStatus(a.isWorshipStatus());
+            dto.setCellStatus(a.isCellStatus());
+            dto.setAttendanceMemo(a.getAttendanceMemo());
+
+            result.put(memberId, dto);
+        }
+
+        return result;
+    }
+
+    /**
+     * [임원용] 특정 셀에 대해 기간별 개별 통계 계산
+     *  - startDate ~ endDate (포함)
+     *  - 셀원별 결석/예배/셀모임 횟수
+     */
+    public List<AttendanceStatsItemDto> getAttendanceStatsForCell(
+            Long cellKey,
+            LocalDate startDate,
+            LocalDate endDate
+    ) {
+        if (cellKey == null || startDate == null || endDate == null)
+            return Collections.emptyList();
+
+        // 1) 셀원 목록
+        List<Members> members = getCellMembersByCellKey(cellKey);
+        if (members.isEmpty())
+            return Collections.emptyList();
+
+        List<Long> memberIds = members.stream()
+                .map(Members::getId)
+                .collect(Collectors.toList());
+
+        // 2) 기간 내 출석 데이터 조회
+        List<Attendances> attendanceList =
+                attendancesRepository.findByAttendanceDateBetweenAndMemberIdIn(
+                        startDate, endDate, memberIds
+                );
+
+        // 3) 기본 row (출석 데이터 없어도 0으로 보이게)
+        Map<Long, AttendanceStatsItemDto> map = new LinkedHashMap<>();
+        for (Members m : members) {
+            AttendanceStatsItemDto dto = new AttendanceStatsItemDto();
+            dto.setMemberId(m.getId());
+            dto.setMemberName(m.getMemberName());
+            dto.setAbsentCount(0);
+            dto.setWorshipCount(0);
+            dto.setCellCount(0);
+            map.put(m.getId(), dto);
+        }
+
+        // 4) 집계 규칙
+        //    1) worship=true, cell=true  → 셀모임 +1
+        //    2) worship=true, cell=false → 예배 +1
+        //    3) worship=false, cell=true → 셀모임 +1
+        //    4) 둘 다 false             → 결석 +1
+        for (Attendances a : attendanceList) {
+            AttendanceStatsItemDto dto = map.get(a.getMemberId());
+            if (dto == null)
+                continue;
+
+            boolean w = a.isWorshipStatus();
+            boolean c = a.isCellStatus();
+
+            if (c) {
+                dto.setCellCount(dto.getCellCount() + 1);
+            } else if (w) {
+                dto.setWorshipCount(dto.getWorshipCount() + 1);
+            } else {
+                dto.setAbsentCount(dto.getAbsentCount() + 1);
+            }
+        }
+
+        return new ArrayList<>(map.values());
     }
 }

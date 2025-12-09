@@ -15,4 +15,13 @@ public interface AttendancesRepository extends JpaRepository<Attendances, Long> 
     Optional<Attendances> findByMemberIdAndAttendanceDate(Long memberId, LocalDate attendanceDate);
 
     List<Attendances> findByAttendanceDateAndMemberIdIn(LocalDate attendanceDate, List<Long> memberIdList);
+
+    /**
+     * 기간 + 여러 memberId에 대한 출석 데이터 조회 (통계용)
+     */
+    List<Attendances> findByAttendanceDateBetweenAndMemberIdIn(
+            LocalDate startDate,
+            LocalDate endDate,
+            List<Long> memberIdList
+    );
 }

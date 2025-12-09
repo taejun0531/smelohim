@@ -106,10 +106,10 @@ public interface MembersRepository extends JpaRepository<Members, Long> {
             @Param("cellName") String cellName
     );
 
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
     update Members m
-    set m.cellName = null
+        set m.cellKey = NULL, m.cellName = NULL
     where m.cellKey = :leaderId
     """)
     void resetCellNameByCellKey(@Param("leaderId") Long leaderId);

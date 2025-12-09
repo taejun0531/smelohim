@@ -1,8 +1,6 @@
 package com.site.elohim.controller;
 
-import com.site.elohim.dto.AttendanceItemDto;
-import com.site.elohim.dto.AttendanceLoadRequest;
-import com.site.elohim.dto.AttendanceSaveRequest;
+import com.site.elohim.dto.*;
 import com.site.elohim.model.Members;
 import com.site.elohim.service.AttendanceService;
 import lombok.RequiredArgsConstructor;
@@ -11,10 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +21,8 @@ import java.util.Map;
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
+
+    // ====================== USER (셀리더/셀원용) ======================
 
     @GetMapping("/user/attendancePage")
     public String attendancePage(@AuthenticationPrincipal UserDetails user, Model model) {
@@ -53,23 +50,23 @@ public class AttendanceController {
 
         // 요청 바디 기본 검증
         if (request == null || request.getItems() == null || request.getItems().isEmpty()) {
-            log.debug("[Attendance] empty request from userId={}", loginUserId);
+            log.debug("[Attendance-USER] empty request from userId={}", loginUserId);
             return false;
         }
 
         try {
             attendanceService.updateAttendanceItems(request.getItems());
-            log.info("[Attendance] successfully updated attendance. userId={}, itemCount={}",
+            log.info("[Attendance-USER] successfully updated attendance. userId={}, itemCount={}",
                     loginUserId, request.getItems().size());
             return true;
         } catch (IllegalArgumentException e) {
             // 서비스 계층에서 유효하지 않은 입력에 대해 IllegalArgumentException 던지는 경우
-            log.warn("[Attendance] invalid attendance request. userId={}, reason={}",
+            log.warn("[Attendance-USER] invalid attendance request. userId={}, reason={}",
                     loginUserId, e.getMessage());
             return false;
         } catch (Exception e) {
             // 예기치 못한 모든 에러 방어 (DB 오류 등)
-            log.error("[Attendance] failed to update attendance. userId={}", loginUserId, e);
+            log.error("[Attendance-USER] failed to update attendance. userId={}", loginUserId, e);
             return false;
         }
     }
@@ -93,6 +90,124 @@ public class AttendanceController {
                 loginUserId,
                 request.getAttendanceDate(),
                 request.getAttendingMemberIdList()
+        );
+    }
+
+    // ====================== ADMIN (임원용) ======================
+
+    /**
+     * 임원용 출석 페이지
+     * - 전체 셀 목록
+     * - 기본 선택 셀(defaultCell)의 셀원 목록
+     */
+    @GetMapping("/admin/attendancePage")
+    public String adminAttendancePage(Model model) {
+
+        List<CellSummaryDto> cellList = attendanceService.getAllCellsForAdmin();
+
+        Long defaultCellKey = null;
+        String defaultCellName = null;
+        List<Members> memberList = Collections.emptyList();
+
+        if (!cellList.isEmpty()) {
+            CellSummaryDto first = cellList.get(0);
+            defaultCellKey = first.getCellKey();
+            defaultCellName = first.getCellName();
+            memberList = attendanceService.getCellMembersByCellKey(defaultCellKey);
+        }
+
+        model.addAttribute("cellList", cellList);
+        model.addAttribute("defaultCellKey", defaultCellKey);
+        model.addAttribute("defaultCellName", defaultCellName);
+        model.addAttribute("memberList", memberList);
+
+        return "adminAttendancePage";
+    }
+
+    /**
+     * 임원용: 날짜 + 멤버 집합 출석 조회
+     */
+    @PostMapping("/admin/loadAttendance")
+    @ResponseBody
+    public Map<Long, AttendanceItemDto> loadAttendanceForAdmin(@RequestBody AttendanceLoadRequest request) {
+
+        if (request == null ||
+                request.getAttendanceDate() == null ||
+                request.getAttendingMemberIdList() == null ||
+                request.getAttendingMemberIdList().isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return attendanceService.getAttendanceMapForAdmin(
+                request.getAttendanceDate(),
+                request.getAttendingMemberIdList()
+        );
+    }
+
+    /**
+     * 임원용: 출석 저장 (특정 셀 제한 없이 전체 허용)
+     */
+    @PostMapping("/admin/updateAttendance")
+    @ResponseBody
+    public boolean updateAttendanceForAdmin(@RequestBody AttendanceSaveRequest request) {
+
+        if (request == null || request.getItems() == null || request.getItems().isEmpty()) {
+            log.debug("[Attendance-ADMIN] empty request.");
+            return false;
+        }
+
+        try {
+            attendanceService.updateAttendanceItems(request.getItems());
+            log.info("[Attendance-ADMIN] successfully updated attendance. itemCount={}",
+                    request.getItems().size());
+            return true;
+        } catch (Exception e) {
+            log.error("[Attendance-ADMIN] failed to update attendance.", e);
+            return false;
+        }
+    }
+
+    /**
+     * 임원용: 셀 선택 시 셀원 목록 조회
+     */
+    @GetMapping("/admin/cellMembers")
+    @ResponseBody
+    public List<MemberSimpleDto> loadCellMembers(@RequestParam Long cellKey) {
+
+        if (cellKey == null) {
+            return Collections.emptyList();
+        }
+
+        List<Members> members = attendanceService.getCellMembersByCellKey(cellKey);
+
+        return members.stream()
+                .map(m -> {
+                    MemberSimpleDto dto = new MemberSimpleDto();
+                    dto.setId(m.getId());
+                    dto.setMemberName(m.getMemberName());
+                    return dto;
+                })
+                .toList();
+    }
+
+    /**
+     * 임원용: 개별 통계 조회 (기간 + 셀 기준)
+     */
+    @PostMapping("/admin/loadAttendanceStats")
+    @ResponseBody
+    public List<AttendanceStatsItemDto> loadAttendanceStats(@RequestBody AttendanceStatsRequest request) {
+
+        if (request == null ||
+                request.getCellKey() == null ||
+                request.getStartDate() == null ||
+                request.getEndDate() == null) {
+            return Collections.emptyList();
+        }
+
+        return attendanceService.getAttendanceStatsForCell(
+                request.getCellKey(),
+                request.getStartDate(),
+                request.getEndDate()
         );
     }
 }

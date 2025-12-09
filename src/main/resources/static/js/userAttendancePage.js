@@ -10,6 +10,10 @@
     const tbody       = document.getElementById("attendanceBody");
     const saveBtn     = document.getElementById("saveAttendanceBtn");
 
+    // 날짜 드롭다운 요소
+    const dateDropdownToggle = document.getElementById("dateDropdownToggle");
+    const dateDropdownPanel  = document.getElementById("dateDropdownPanel");
+
     // 요약 카드 요소
     const worshipCountEl = document.getElementById("worshipCount");
     const cellCountEl    = document.getElementById("cellCount");
@@ -29,13 +33,48 @@
         return `${y}-${m}-${d}`;
     }
 
-    // ===== 현재 "주일" 상태 =====
+    // "YYYY년 M월 D일(주일)" 형식으로 표시
+    function formatSundayKorean(date) {
+        return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일(주일)`;
+    }
+
+    // 기준: "현재 연도" 기준으로 작년~올해 주일만 생성
     const today = new Date();
+    const baseYear = today.getFullYear();
+
+    function generateSundayDates(baseYear) {
+        const list = [];
+        const start = new Date(baseYear - 1, 0, 1);   // 작년 1월 1일
+        const end   = new Date(baseYear, 11, 31);     // 올해 12월 31일
+
+        let d = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+        d.setHours(0, 0, 0, 0);
+
+        // 첫 번째 일요일로 맞추기
+        const day = d.getDay(); // 0=일
+        if (day !== 0) {
+            d.setDate(d.getDate() + (7 - day));
+        }
+
+        while (d <= end) {
+            list.push(new Date(d.getTime())); // 깊은 복사
+            d.setDate(d.getDate() + 7);
+        }
+        return list;
+    }
+
+    // 2024~2025 같은 느낌으로, "작년~올해" 주일 배열
+    const sundayDateList = generateSundayDates(baseYear);
+
+    // ===== 현재 "주일" 상태 =====
     let currentSunday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     currentSunday.setHours(0, 0, 0, 0);
 
     const dow = currentSunday.getDay();   // 0(일) ~ 6(토)
     currentSunday.setDate(currentSunday.getDate() - dow); // 해당 주의 일요일
+
+    // 현재 선택된 주일의 문자열 (YYYY-MM-DD)
+    let selectedDateStr = toDateStr(currentSunday);
 
     // 상단 라벨(년도/월/일) 갱신
     function updateYearMonthLabel() {
@@ -44,6 +83,138 @@
         if (dayLabel)
             dayLabel.textContent = String(currentSunday.getDate());
     }
+
+    // ===== 날짜 선택 드롭다운 =====
+    let isDateDropdownOpen = false;
+
+    function closeDateDropdown() {
+        if (!dateDropdownPanel) return;
+        dateDropdownPanel.classList.add("hidden");
+        if (dateDropdownToggle) {
+            dateDropdownToggle.setAttribute("aria-expanded", "false");
+        }
+        isDateDropdownOpen = false;
+    }
+
+    function openDateDropdown() {
+        if (!dateDropdownPanel) return;
+
+        // 열 때마다 현재 Sunday 기준으로 강조 갱신
+        updateSelectedDateInDropdown();
+
+        dateDropdownPanel.classList.remove("hidden");
+        if (dateDropdownToggle) {
+            dateDropdownToggle.setAttribute("aria-expanded", "true");
+        }
+        isDateDropdownOpen = true;
+
+        // selected 된 날짜가 리스트 중앙에 오도록 스크롤 조정
+        const selectedEl = dateDropdownPanel.querySelector(".date-option.selected");
+        if (selectedEl) {
+            const panel = dateDropdownPanel;
+
+            // 선택된 항목의 위치 기준으로 중앙으로 맞춰주기
+            const targetTop =
+                selectedEl.offsetTop - (panel.clientHeight / 2 - selectedEl.offsetHeight / 2);
+
+            panel.scrollTop = Math.max(targetTop, 0);
+        }
+    }
+
+    function buildSundayDropdown() {
+        if (!dateDropdownPanel) return;
+
+        dateDropdownPanel.innerHTML = "";
+
+        const currentStr = toDateStr(currentSunday); // 현재 주일 기준
+
+        sundayDateList.forEach((d) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "date-option";
+            const dateStr = toDateStr(d);
+
+            btn.dataset.date = dateStr;
+            btn.textContent  = formatSundayKorean(d);
+
+            // 현재 날짜는 selected 상태로 표시
+            if (dateStr === currentStr) {
+                btn.classList.add("selected");
+                btn.setAttribute("aria-selected", "true");
+            }
+
+            dateDropdownPanel.appendChild(btn);
+        });
+    }
+
+    function updateSelectedDateInDropdown() {
+        if (!dateDropdownPanel) return;
+
+        selectedDateStr = toDateStr(currentSunday);
+
+        const options = dateDropdownPanel.querySelectorAll(".date-option");
+        options.forEach((btn) => {
+            const isSelected = btn.dataset.date === selectedDateStr;
+            btn.classList.toggle("selected", isSelected);
+            btn.setAttribute("aria-selected", isSelected ? "true" : "false");
+        });
+    }
+
+    // 토글 버튼 클릭 → 드롭다운 열기/닫기
+    dateDropdownToggle?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (isDateDropdownOpen) {
+            closeDateDropdown();
+        } else {
+            openDateDropdown();
+        }
+    });
+
+    // 드롭다운에서 날짜 선택 시 현재 주일 변경
+    dateDropdownPanel?.addEventListener("click", (e) => {
+        const target = e.target.closest(".date-option");
+        if (!target) return;
+
+        const dateStr = target.dataset.date;
+        if (!dateStr) return;
+
+        const parts = dateStr.split("-");
+        const y = Number(parts[0]);
+        const m = Number(parts[1]);
+        const d = Number(parts[2]);
+
+        const selected = new Date(y, m - 1, d);
+        selected.setHours(0, 0, 0, 0);
+
+        currentSunday = selected;   // 선택된 주일로 이동
+        editedMap.clear();          // 변경 내역 초기화
+        renderAttendanceTable();    // 테이블/요약 재렌더
+
+        // 리스트 상에서도 선택 상태 업데이트
+        updateSelectedDateInDropdown();
+
+        closeDateDropdown();
+    });
+
+    // 바깥 클릭 시 드롭다운 닫기
+    document.addEventListener("click", (e) => {
+        if (!isDateDropdownOpen) return;
+        if (!dateDropdownPanel || !dateDropdownToggle) return;
+
+        const withinPanel  = dateDropdownPanel.contains(e.target);
+        const withinButton = dateDropdownToggle.contains(e.target);
+
+        if (!withinPanel && !withinButton) {
+            closeDateDropdown();
+        }
+    });
+
+    // ESC 키로 닫기
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            closeDateDropdown();
+        }
+    });
 
     // ===== 변경된 셀만 추적하는 Map =====
     // key: `${memberId}|${dateStr}`
@@ -303,16 +474,23 @@
         currentSunday.setDate(currentSunday.getDate() - 7); // 이전 주
         editedMap.clear(); // 주 바뀔 때 변경 목록 초기화
         renderAttendanceTable();
+        updateSelectedDateInDropdown(); // 리스트 강조 갱신
     });
 
     nextBtn?.addEventListener("click", () => {
         currentSunday.setDate(currentSunday.getDate() + 7); // 다음 주
         editedMap.clear(); // 주 바뀔 때 변경 목록 초기화
         renderAttendanceTable();
+        updateSelectedDateInDropdown(); // 리스트 강조 갱신
     });
 
     // ===== 저장 버튼 클릭 이벤트 =====
     saveBtn?.addEventListener("click", saveAttendance);
+
+    // 주일 드롭다운 옵션 구성
+    buildSundayDropdown();
+    // 초기 선택 상태도 반영
+    updateSelectedDateInDropdown();
 
     // 초기 렌더링
     renderAttendanceTable();

@@ -272,6 +272,42 @@ input:focus,
 /* Small help text (선택) */
 .help-text{ font-size: 13px; color: var(--muted); margin-top: 6px; }
 
+/* === 로그인 이동 버튼 ======================================= */
+.login-move-box{
+    margin-top: 14px;
+    display: flex;
+    justify-content: center;
+}
+
+.login-move-btn{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+    color: #0d3c2e;
+    background: #ddfbe9;
+    border: 1px solid #b7f0d3;
+    border-radius: 999px;
+    transition: transform .05s ease, box-shadow .15s ease, background-color .15s ease;
+}
+
+.login-move-btn:hover{
+    box-shadow: 0 8px 18px rgba(16,185,129,.16);
+}
+
+.login-move-btn:active{
+    transform: translateY(1px);
+}
+
+body.dark .login-move-btn{
+    color: #0a1511;
+    background: #9cf0c3;
+    border-color: #6be5a9;
+}
+
 /* Responsive */
 @media (max-width: 420px){
     .input_join_check_id{ width: 100%; justify-content:center; }
