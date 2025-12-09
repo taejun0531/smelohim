@@ -105,21 +105,7 @@ public class AttendanceController {
 
         List<CellSummaryDto> cellList = attendanceService.getAllCellsForAdmin();
 
-        Long defaultCellKey = null;
-        String defaultCellName = null;
-        List<Members> memberList = Collections.emptyList();
-
-        if (!cellList.isEmpty()) {
-            CellSummaryDto first = cellList.get(0);
-            defaultCellKey = first.getCellKey();
-            defaultCellName = first.getCellName();
-            memberList = attendanceService.getCellMembersByCellKey(defaultCellKey);
-        }
-
         model.addAttribute("cellList", cellList);
-        model.addAttribute("defaultCellKey", defaultCellKey);
-        model.addAttribute("defaultCellName", defaultCellName);
-        model.addAttribute("memberList", memberList);
 
         return "adminAttendancePage";
     }
@@ -209,5 +195,23 @@ public class AttendanceController {
                 request.getStartDate(),
                 request.getEndDate()
         );
+    }
+
+    /**
+     * 임원용: 전체 멤버 조회 (전체 버튼 클릭 시)
+     */
+    @GetMapping("/admin/allMembers")
+    @ResponseBody
+    public List<MemberSimpleDto> loadAllMembers() {
+        List<Members> members = attendanceService.getAllMembersForAdmin();
+
+        return members.stream()
+                .map(m -> {
+                    MemberSimpleDto dto = new MemberSimpleDto();
+                    dto.setId(m.getId());
+                    dto.setMemberName(m.getMemberName());
+                    return dto;
+                })
+                .toList();
     }
 }

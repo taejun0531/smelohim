@@ -1,5 +1,6 @@
+// /js/adminAttendancePage.js
 (function () {
-    // ===== 공통 DOM 요소 =====
+    // ===== DOM 요소 캐시 =====
     const yearLabel   = document.getElementById("yearLabel");
     const monthLabel  = document.getElementById("monthLabel");
     const prevBtn     = document.getElementById("prevMonth");
@@ -10,14 +11,14 @@
     const saveBtn     = document.getElementById("saveAttendanceBtn");
     const attendanceTitleText = document.getElementById("attendanceTitleText");
 
-    // 셀 선택 관련
-    const cellCards = document.querySelectorAll(".cell-card");
+    const cellCards   = document.querySelectorAll(".cell-card");
+    const allCellBtn  = document.querySelector(".cell-card.cell-all");
 
     // 달 선택 드롭다운
     const dateDropdownToggle = document.getElementById("dateDropdownToggle");
     const dateDropdownPanel  = document.getElementById("dateDropdownPanel");
 
-    // 통계 관련
+    // 개별 통계 관련
     const statsStartInput = document.getElementById("statsStartDate");
     const statsEndInput   = document.getElementById("statsEndDate");
     const loadStatsBtn    = document.getElementById("loadStatsBtn");
@@ -25,34 +26,31 @@
 
     if (!yearLabel || !monthLabel || !headerRow1 || !headerRow2 || !tbody) return;
 
-    // ===== 상태값 =====
-    let selectedCellKey   = null;
+    // ===== 상태 값 =====
+    let selectedCellKey   = null;   // "ALL" 또는 Long(cellKey)
     let selectedCellName  = null;
 
-    const today = new Date();
+    const today    = new Date();
     const baseYear = today.getFullYear();
 
-    // 선택된 달(1일 기준)
+    // 기준 달(1일)
     let currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     currentMonth.setHours(0, 0, 0, 0);
-    let selectedMonthStr = null;
 
-    // 현재 달에 속하는 주일 리스트
+    // 현재 달의 주일 리스트
     let currentMonthSundays = [];
 
-    // 날짜별 요약 박스 요소 저장용 (dateStr -> {absentEl, worshipEl, cellEl})
+    // 날짜별 header 요약 박스 (dateStr -> { absentEl, worshipEl, cellEl })
     const summaryMap = new Map();
 
-    // 변경 내역 (업서트용)
-    // key: memberId|YYYY-MM-DD
+    // 출석 변경 내역 (업서트용)
+    // key: `${memberId}|${yyyy-MM-dd}`
     const editedMap = new Map();
 
-    // 초기에는 어떤 셀도 선택되지 않도록 active 제거
-    cellCards.forEach((btn) => btn.classList.remove("active"));
-    if (attendanceTitleText)
-        attendanceTitleText.textContent = "출석 현황";
+    // 드롭다운 상태
+    let isDateDropdownOpen = false;
 
-    // ===== 유틸 =====
+    // ===== 유틸 함수 =====
     const pad2 = (n) => (n < 10 ? "0" + n : String(n));
 
     function toDateStr(date) {
@@ -108,7 +106,7 @@
         let d = new Date(firstDay.getFullYear(), firstDay.getMonth(), firstDay.getDate());
         d.setHours(0, 0, 0, 0);
 
-        // 첫 주일
+        // 첫 주일 계산
         const dow = d.getDay();
         if (dow !== 0) {
             d.setDate(d.getDate() + (7 - dow));
@@ -122,22 +120,18 @@
         return result;
     }
 
-    // ===== 월 선택 드롭다운 =====
-    let isDateDropdownOpen = false;
-
+    // ===== 달 선택 드롭다운 =====
     function closeDateDropdown() {
         if (!dateDropdownPanel) return;
         dateDropdownPanel.classList.add("hidden");
-        if (dateDropdownToggle) {
-            dateDropdownToggle.setAttribute("aria-expanded", "false");
-        }
+        dateDropdownToggle?.setAttribute("aria-expanded", "false");
         isDateDropdownOpen = false;
     }
 
     function updateSelectedMonthInDropdown() {
         if (!dateDropdownPanel) return;
 
-        selectedMonthStr = toMonthStr(currentMonth);
+        const selectedMonthStr = toMonthStr(currentMonth);
         const options = dateDropdownPanel.querySelectorAll(".date-option");
 
         options.forEach((btn) => {
@@ -166,36 +160,31 @@
                 btn.classList.add("selected");
                 btn.setAttribute("aria-selected", "true");
             }
-
             dateDropdownPanel.appendChild(btn);
         });
     }
 
     function openDateDropdown() {
         if (!dateDropdownPanel) return;
+
         updateSelectedMonthInDropdown();
         dateDropdownPanel.classList.remove("hidden");
-        if (dateDropdownToggle) {
-            dateDropdownToggle.setAttribute("aria-expanded", "true");
-        }
+        dateDropdownToggle?.setAttribute("aria-expanded", "true");
         isDateDropdownOpen = true;
 
         const selectedEl = dateDropdownPanel.querySelector(".date-option.selected");
-        if (selectedEl) {
-            const panel = dateDropdownPanel;
-            const targetTop =
-                selectedEl.offsetTop - (panel.clientHeight / 2 - selectedEl.offsetHeight / 2);
-            panel.scrollTop = Math.max(targetTop, 0);
-        }
+        if (!selectedEl) return;
+
+        const panel = dateDropdownPanel;
+        const targetTop =
+            selectedEl.offsetTop - (panel.clientHeight / 2 - selectedEl.offsetHeight / 2);
+
+        panel.scrollTop = Math.max(targetTop, 0);
     }
 
     dateDropdownToggle?.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (isDateDropdownOpen) {
-            closeDateDropdown();
-        } else {
-            openDateDropdown();
-        }
+        isDateDropdownOpen ? closeDateDropdown() : openDateDropdown();
     });
 
     dateDropdownPanel?.addEventListener("click", (e) => {
@@ -218,6 +207,7 @@
         if (selectedCellKey) {
             renderAttendanceTable();
         } else {
+            updateYearMonthLabel();
             clearAttendanceView();
         }
         updateSelectedMonthInDropdown();
@@ -225,8 +215,7 @@
     });
 
     document.addEventListener("click", (e) => {
-        if (!isDateDropdownOpen) return;
-        if (!dateDropdownPanel || !dateDropdownToggle) return;
+        if (!isDateDropdownOpen || !dateDropdownPanel || !dateDropdownToggle) return;
 
         const withinPanel  = dateDropdownPanel.contains(e.target);
         const withinButton = dateDropdownToggle.contains(e.target);
@@ -241,47 +230,49 @@
         }
     });
 
-    // ===== 공통: 출석 화면 초기화(셀 미선택 / 변경 후용) ====================
+    // ===== 출석 화면 초기화 =====
     function clearAttendanceView() {
-        // headerRow1: 이름 컬럼만 남기고 삭제
-        while (headerRow1.children.length > 1)
+        // headerRow1: 이름 컬럼만 유지
+        while (headerRow1.children.length > 1) {
             headerRow1.removeChild(headerRow1.lastElementChild);
+        }
         // headerRow2 전체 삭제
-        while (headerRow2.firstChild)
+        while (headerRow2.firstChild) {
             headerRow2.removeChild(headerRow2.firstChild);
-        // 바디/요약/변경 내역 초기화
+        }
+
         tbody.innerHTML = "";
+        statsBody && (statsBody.innerHTML = "");
+
         summaryMap.clear();
         currentMonthSundays = [];
         editedMap.clear();
-        // 통계 테이블도 비우기
-        if (statsBody)
-            statsBody.innerHTML = "";
     }
 
-    // ===== 출석 변경 내역 관리 =============================================
+    // ===== 출석 변경 내역 관리 =====
     function markEdited(memberId, dateStr, updater) {
         if (!memberId || !dateStr) return;
 
-        const key = memberId + "|" + dateStr;
+        const key = `${memberId}|${dateStr}`;
         let item = editedMap.get(key);
+
         if (!item) {
             item = {
-                memberId: memberId,
+                memberId: Number(memberId),
                 attendanceDate: dateStr,
                 worshipStatus: false,
                 cellStatus: false,
                 attendanceMemo: null
             };
         }
+
         updater(item);
         editedMap.set(key, item);
     }
 
-    // ===== 요약 계산: headerRow1 안 작은 박스 업데이트 =======================
+    // ===== 요약 계산/렌더링 =====
     function computeAndRenderSummary() {
-        if (!currentMonthSundays || currentMonthSundays.length === 0)
-            return;
+        if (!currentMonthSundays || currentMonthSundays.length === 0) return;
 
         const rows = Array.from(tbody.querySelectorAll("tr"));
 
@@ -302,24 +293,25 @@
                 const w = !!(chkW && chkW.checked);
                 const c = !!(chkC && chkC.checked);
 
-                if (c)
+                if (c) {
                     cellCnt++;
-                else if (w)
+                } else if (w) {
                     worshipCnt++;
-                else
+                } else {
                     absentCnt++;
+                }
             });
 
             const entry = summaryMap.get(dateStr);
-            if (entry) {
-                entry.absentEl.textContent  = String(absentCnt);
-                entry.worshipEl.textContent = String(worshipCnt);
-                entry.cellEl.textContent    = String(cellCnt);
-            }
+            if (!entry) return;
+
+            entry.absentEl.textContent  = String(absentCnt);
+            entry.worshipEl.textContent = String(worshipCnt);
+            entry.cellEl.textContent    = String(cellCnt);
         });
     }
 
-    // ===== 서버: 하루 기준 출석 조회 ======================================
+    // ===== 서버 통신: 하루 기준 출석 조회 (Admin) =====
     async function loadAttendanceForDate(dateStr) {
         try {
             const rows = Array.from(tbody.querySelectorAll("tr"));
@@ -329,16 +321,14 @@
                 .map(id => Number(id))
                 .filter(id => Number.isInteger(id) && id > 0);
 
-            if (memberIdList.length === 0) {
-                return;
-            }
+            if (memberIdList.length === 0) return;
 
             const res = await fetch("/admin/loadAttendance", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     attendanceDate: dateStr,
-                    attendingMemberIdList : memberIdList
+                    attendingMemberIdList: memberIdList
                 })
             });
 
@@ -348,9 +338,7 @@
             }
 
             const data = await res.json();
-            if (!data || typeof data !== "object") {
-                return;
-            }
+            if (!data || typeof data !== "object") return;
 
             Object.entries(data).forEach(([memberIdStr, dto]) => {
                 const tr = tbody.querySelector(`tr[data-member-id="${memberIdStr}"]`);
@@ -376,14 +364,13 @@
         }
     }
 
-    // 해당 달에 속한 모든 주일 출석 조회 후 요약 반영
     async function loadAttendanceForMonth() {
         if (!currentMonthSundays || currentMonthSundays.length === 0) {
             computeAndRenderSummary();
             return;
         }
 
-        const dateStrList = currentMonthSundays.map((d) => toDateStr(d));
+        const dateStrList = currentMonthSundays.map(toDateStr);
 
         try {
             await Promise.all(dateStrList.map((ds) => loadAttendanceForDate(ds)));
@@ -392,7 +379,7 @@
         }
     }
 
-    // ===== 출석 저장 =======================================================
+    // ===== 출석 저장 (Admin) =====
     async function saveAttendance() {
         if (editedMap.size === 0) {
             alert("변경된 출석 정보가 없습니다.");
@@ -421,7 +408,7 @@
         }
     }
 
-    // ===== 출석 테이블 렌더링 (선택된 셀 + 선택된 달) =======================
+    // ===== 출석 테이블 렌더링 (셀 선택 + 달 기준) =====
     function renderAttendanceTable() {
         if (!selectedCellKey) {
             clearAttendanceView();
@@ -431,20 +418,22 @@
         updateYearMonthLabel();
 
         // 헤더 초기화
-        while (headerRow1.children.length > 1)
+        while (headerRow1.children.length > 1) {
             headerRow1.removeChild(headerRow1.lastElementChild);
-        while (headerRow2.firstChild)
+        }
+        while (headerRow2.firstChild) {
             headerRow2.removeChild(headerRow2.firstChild);
+        }
 
         summaryMap.clear();
-
         currentMonthSundays = getSundaysInMonth(currentMonth);
+
         if (currentMonthSundays.length === 0) {
             computeAndRenderSummary();
             return;
         }
 
-        // 1행 헤더: 날짜 + 작은 요약 박스
+        // 1행 헤더: 날짜 + 요약 박스
         currentMonthSundays.forEach((d) => {
             const th = document.createElement("th");
             th.colSpan = 3;
@@ -462,12 +451,15 @@
             const makeChip = (label, extraClass) => {
                 const chip = document.createElement("div");
                 chip.className = `header-summary-chip ${extraClass}`;
+
                 const labelEl = document.createElement("span");
                 labelEl.className = "header-summary-label";
                 labelEl.textContent = label;
+
                 const valueEl = document.createElement("span");
                 valueEl.className = "header-summary-value";
                 valueEl.textContent = "0";
+
                 chip.appendChild(labelEl);
                 chip.appendChild(valueEl);
                 return { chip, valueEl };
@@ -494,24 +486,28 @@
             });
         });
 
-        // 2행 헤더: 예배 / 셀 / 메모 * 주일 수
+        // 2행 헤더: 예배 / 셀 / 메모
         currentMonthSundays.forEach(() => {
             const thW = document.createElement("th");
             thW.textContent = "예배";
+
             const thC = document.createElement("th");
             thC.textContent = "셀";
+
             const thM = document.createElement("th");
             thM.textContent = "메모";
+
             headerRow2.appendChild(thW);
             headerRow2.appendChild(thC);
             headerRow2.appendChild(thM);
         });
 
-        // 바디: 기존 tr(이름만 있는 상태)에 예배/셀/메모 컬럼 추가
+        // 바디: 기존 tr(이름만 있음)에 예배/셀/메모 컬럼 추가
         const rows = tbody.querySelectorAll("tr");
         rows.forEach((tr) => {
-            while (tr.children.length > 1)
+            while (tr.children.length > 1) {
                 tr.removeChild(tr.lastElementChild);
+            }
 
             const memberId = tr.dataset.memberId || "";
 
@@ -555,6 +551,7 @@
                 tr.appendChild(tdC);
                 tr.appendChild(tdM);
 
+                // 이벤트 핸들러
                 chkW.addEventListener("change", () => {
                     markEdited(memberId, dateStr, (item) => {
                         item.worshipStatus = chkW.checked;
@@ -578,18 +575,16 @@
             });
         });
 
-        // 서버에서 실제 출석 데이터 로딩 후 요약 반영
+        // 실제 출석 데이터 로딩 후 요약 반영
         loadAttendanceForMonth();
     }
 
-    // ===== 셀 선택 시: 셀원 목록 다시 불러오기 ============================
+    // ===== 셀원 목록 로드: 특정 셀 =====
     async function loadCellMembersAndRender(cellKey, cellName) {
         if (!cellKey) return;
 
         try {
-            const res = await fetch(`/admin/cellMembers?cellKey=${cellKey}`, {
-                method: "GET"
-            });
+            const res = await fetch(`/admin/cellMembers?cellKey=${cellKey}`, { method: "GET" });
             if (!res.ok) {
                 alert("셀원 목록을 불러오지 못했습니다.");
                 return;
@@ -600,7 +595,7 @@
             tbody.innerHTML = "";
             members.forEach((m) => {
                 const tr = document.createElement("tr");
-                tr.dataset.memberId = m.id;
+                tr.dataset.memberId   = m.id;
                 tr.dataset.memberName = m.memberName;
 
                 const tdName = document.createElement("td");
@@ -614,21 +609,55 @@
             editedMap.clear();
             renderAttendanceTable();
 
-            if (statsBody) {
-                statsBody.innerHTML = "";
-            }
+            statsBody && (statsBody.innerHTML = "");
         } catch (err) {
             console.error("셀원 목록 로드 실패 :", err);
             alert("셀원 목록을 불러오는 중 오류가 발생했습니다.");
         }
     }
 
+    // ===== 셀원 목록 로드: 전체 =====
+    async function loadAllMembersAndRender() {
+        try {
+            const res = await fetch("/admin/allMembers", { method: "GET" });
+            if (!res.ok) {
+                alert("전체 멤버 목록을 불러오지 못했습니다.");
+                return;
+            }
+
+            const members = await res.json(); // [{id, memberName}, ...]
+
+            tbody.innerHTML = "";
+            members.forEach((m) => {
+                const tr = document.createElement("tr");
+                tr.dataset.memberId   = m.id;
+                tr.dataset.memberName = m.memberName;
+
+                const tdName = document.createElement("td");
+                tdName.className = "member-name";
+                tdName.textContent = m.memberName;
+
+                tr.appendChild(tdName);
+                tbody.appendChild(tr);
+            });
+
+            editedMap.clear();
+            renderAttendanceTable();
+
+            statsBody && (statsBody.innerHTML = "");
+        } catch (err) {
+            console.error("전체 멤버 목록 로드 실패 :", err);
+            alert("전체 멤버 목록을 불러오는 중 오류가 발생했습니다.");
+        }
+    }
+
+    // ===== 셀 카드 클릭 핸들러 =====
     cellCards.forEach((btn) => {
         btn.addEventListener("click", () => {
-            const cellKey  = Number(btn.dataset.cellKey);
+            const cellKey  = btn.dataset.cellKey;
             const cellName = btn.dataset.cellName || "";
 
-            if (!cellKey || cellKey === selectedCellKey) return;
+            if (!cellKey || cellKey === String(selectedCellKey)) return;
 
             cellCards.forEach((b) => b.classList.remove("active"));
             btn.classList.add("active");
@@ -637,16 +666,23 @@
             selectedCellName = cellName;
 
             if (attendanceTitleText) {
-                attendanceTitleText.textContent = selectedCellName
-                    ? `출석 현황 (${selectedCellName})`
+                attendanceTitleText.textContent = cellName
+                    ? `출석 현황 (${cellName})`
                     : "출석 현황";
             }
 
-            loadCellMembersAndRender(selectedCellKey, selectedCellName);
+            if (cellKey === "ALL") {
+                loadAllMembersAndRender();
+            } else {
+                const keyNum = Number(cellKey);
+                if (!Number.isNaN(keyNum)) {
+                    loadCellMembersAndRender(keyNum, cellName);
+                }
+            }
         });
     });
 
-    // ===== 달 네비게이션 ================================================
+    // ===== 달 네비게이션 =====
     prevBtn?.addEventListener("click", () => {
         currentMonth.setMonth(currentMonth.getMonth() - 1);
         currentMonth.setDate(1);
@@ -675,15 +711,16 @@
         updateSelectedMonthInDropdown();
     });
 
-    // ===== 출석 저장 버튼 ================================================
+    // ===== 출석 저장 버튼 =====
     saveBtn?.addEventListener("click", saveAttendance);
 
-    // ===== 개별 통계 조회 ================================================
+    // ===== 개별 통계 조회 =====
     async function loadStats() {
         if (!selectedCellKey) {
             alert("먼저 셀을 선택해주세요.");
             return;
         }
+
         const start = statsStartInput?.value;
         const end   = statsEndInput?.value;
 
@@ -696,12 +733,20 @@
             return;
         }
 
+        // "ALL"이면 cellKey = -1 로 서버에 전달
+        const cellKeyValue = (selectedCellKey === "ALL") ? -1 : Number(selectedCellKey);
+
+        if (cellKeyValue !== -1 && Number.isNaN(cellKeyValue)) {
+            alert("셀 정보가 올바르지 않습니다. 다시 선택해주세요.");
+            return;
+        }
+
         try {
             const res = await fetch("/admin/loadAttendanceStats", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    cellKey: selectedCellKey,
+                    cellKey: cellKeyValue,
                     startDate: start,
                     endDate: end
                 })
@@ -757,7 +802,7 @@
 
     loadStatsBtn?.addEventListener("click", loadStats);
 
-    // ===== 통계 날짜 입력: 키보드 입력/붙여넣기 방지 ======================
+    // ===== 통계 날짜 입력: 키보드/붙여넣기 방지 =====
     function disableTypingOnDateInput(input) {
         if (!input) return;
         input.addEventListener("keydown", (e) => e.preventDefault());
@@ -766,9 +811,24 @@
     disableTypingOnDateInput(statsStartInput);
     disableTypingOnDateInput(statsEndInput);
 
-    // ===== 초기 설정 ======================================================
+    // ===== 초기 설정 =====
     updateYearMonthLabel();
     buildMonthDropdown();
     updateSelectedMonthInDropdown();
-    clearAttendanceView();   // 처음 화면은 비어 있는 상태
+    clearAttendanceView();   // 첫 화면은 비워놓기
+
+    // 전체 버튼이 있다면: 기본 선택 + 전체 멤버 로드
+    if (allCellBtn) {
+        cellCards.forEach((b) => b.classList.remove("active"));
+        allCellBtn.classList.add("active");
+
+        selectedCellKey  = "ALL";
+        selectedCellName = allCellBtn.dataset.cellName || "전체";
+
+        if (attendanceTitleText) {
+            attendanceTitleText.textContent = `출석 현황 (${selectedCellName})`;
+        }
+
+        loadAllMembersAndRender();
+    }
 })();

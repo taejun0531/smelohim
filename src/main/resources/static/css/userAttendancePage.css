@@ -378,7 +378,7 @@ body.dark tbody tr:nth-child(even) td{
     border-radius:999px;
     border:1px solid var(--border);
     background:#ffffff;
-    font-size:11px;
+    font-size:12px;
     cursor:pointer;
     box-shadow:0 2px 6px rgba(16,185,129,.10);
 }

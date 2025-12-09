@@ -202,8 +202,8 @@ body.dark thead th{
     background:linear-gradient(180deg,#0e221b,#10241d);
 }
 .col-name{
-    min-width:110px;
-    text-align:left;
+    min-width:80px;
+    text-align:center;
 }
 tbody td{
     padding:8px 10px;
@@ -367,7 +367,7 @@ body.dark tbody tr:nth-child(even) td{
     border-radius:999px;
     border:1px solid var(--border);
     background:#ffffff;
-    font-size:11px;
+    font-size:12px;
     cursor:pointer;
     box-shadow:0 2px 6px rgba(16,185,129,.10);
 }
@@ -503,6 +503,107 @@ body.dark .date-option.selected{
     max-width:100%;
 }
 
+/* ===== 출석 현황 테이블 ========================================= */
+
+#attendanceTable thead th{
+    padding:6px 6px;
+    text-align:center;
+    background:linear-gradient(180deg,#f7fff9,#ffffff);
+    border-bottom:1px solid var(--border);
+    font-size:12px; font-weight:900;
+    vertical-align:top;
+}
+body.dark #attendanceTable thead th{
+    background:linear-gradient(180deg,#0e221b,#10241d);
+}
+#attendanceTable .col-name{
+    min-width: 80px;
+    font-size: 14px;
+    text-align: center;
+    vertical-align: middle;
+}
+#attendanceTable tbody td{
+    padding:8px 10px;
+    border-bottom:1px solid var(--border);
+    font-size:13px;
+}
+
+/* 짝수 줄 배경 – 투명 RGBA 대신 불투명 색 */
+#attendanceTable tbody tr:nth-child(even) td{
+    background:#eaf7f0;           /* 연한 초록(불투명) */
+}
+
+/* hover 시 전체 줄 배경도 불투명 색으로 */
+#attendanceTable tbody tr:hover td{
+    background:#d7f2e4;
+}
+
+body.dark #attendanceTable tbody tr:nth-child(even) td{
+    background:rgba(41,211,106,.10);   /* 다크 모드는 그대로 두어도 됨 */
+}
+body.dark #attendanceTable tbody tr:hover td{
+    background:rgba(41,211,106,.18);
+}
+
+/* 이름 셀 sticky + 배경 고정 */
+#attendanceTable thead th.col-name{
+    position: sticky;
+    left: 0;
+    z-index: 20;
+    background:linear-gradient(180deg,#f7fff9,#ffffff);
+}
+#attendanceTable tbody td.member-name{
+    position: sticky;
+    left: 0;
+    z-index: 15;
+    font-weight:800;
+    background:#ffffff;          /* 홀수 줄 기본 */
+    text-align: center;
+}
+
+/* 짝수 줄 이름 셀은 짝수 줄 배경과 동일하게 */
+#attendanceTable tbody tr:nth-child(even) td.member-name{
+    background:#eaf7f0;
+}
+
+/* hover 시 이름 셀도 hover 색과 동일 */
+#attendanceTable tbody tr:hover td.member-name{
+    background:#d7f2e4;
+}
+
+/* ===== 다크 모드: 반드시 불투명 색 사용 ========================= */
+
+/* 헤더 이름 셀 배경 */
+body.dark #attendanceTable thead th.col-name{
+    background:linear-gradient(180deg,#0e221b,#10241d);
+}
+
+/* 다크 모드 기본 줄 배경 */
+body.dark #attendanceTable tbody td{
+    background:#0e1f18;           /* 카드 색이랑 맞춤 */
+}
+
+/* 다크 모드 짝수 줄 배경 (불투명) */
+body.dark #attendanceTable tbody tr:nth-child(even) td{
+    background:#10241d;           /* 살짝 더 밝은 초록톤 */
+}
+
+/* 다크 모드 hover 줄 배경 (불투명) */
+body.dark #attendanceTable tbody tr:hover td{
+    background:#153428;
+}
+
+/* sticky 이름 셀(다크) */
+body.dark #attendanceTable tbody td.member-name{
+    background:#0e1f18;
+}
+body.dark #attendanceTable tbody tr:nth-child(even) td.member-name{
+    background:#10241d;
+}
+body.dark #attendanceTable tbody tr:hover td.member-name{
+    background:#153428;
+}
+
 /* 오른쪽 카드(통계) */
 .card.card-stats{
     padding:12px;
@@ -563,12 +664,33 @@ body.dark .stats-input{
 #statsTable thead th,
 #statsTable tbody td{
     font-size:13px;
+    text-align: center;
 }
 #statsTable tbody tr:nth-child(even) td{
     background:rgba(34,197,94,.03);
 }
 #statsTable tbody tr:hover td{
     background:rgba(34,197,94,.08);
+}
+
+/* 공통: 모든 개별 통계 TD 글씨 굵게 */
+#statsTable tbody td {
+    font-weight: 600;
+}
+
+/* 결석 숫자 = 빨강 */
+#statsTable tbody td:nth-child(2) {
+    color: #dc2626;  /* Tailwind red-600 */
+}
+
+/* 예배 숫자 = 파랑 */
+#statsTable tbody td:nth-child(3) {
+    color: #1d4ed8;  /* Tailwind blue-700 */
+}
+
+/* 셀모임 숫자 = 초록 */
+#statsTable tbody td:nth-child(4) {
+    color: #15803d;  /* Tailwind green-700 */
 }
 
 /* 반응형: 좁은 화면에서는 세로 스택 */

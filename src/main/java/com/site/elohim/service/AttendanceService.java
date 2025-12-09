@@ -216,34 +216,59 @@ public class AttendanceService {
     }
 
     /**
-     * [임원용] 특정 셀에 대해 기간별 개별 통계 계산
+     * [임원용] 기간별 개별 통계 계산
+     *  - cellKey == -1  → 전체 멤버 기준
+     *  - cellKey != -1 → 해당 셀 멤버 기준
      *  - startDate ~ endDate (포함)
-     *  - 셀원별 결석/예배/셀모임 횟수
+     *  - 해당 기간 내 '주일' 기준으로 셀원별 결석/예배/셀모임 횟수 집계
+     *  - 주일에 출석 row 자체가 없으면 결석으로 간주
      */
     public List<AttendanceStatsItemDto> getAttendanceStatsForCell(
-            Long cellKey,
-            LocalDate startDate,
-            LocalDate endDate
-    ) {
-        if (cellKey == null || startDate == null || endDate == null)
+            Long cellKey, LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null)
             return Collections.emptyList();
 
-        // 1) 셀원 목록
-        List<Members> members = getCellMembersByCellKey(cellKey);
-        if (members.isEmpty())
+        // 1) 통계 대상 멤버 목록 결정
+        List<Members> members;
+
+        // 전체 버튼(ALL): 전체 멤버 기준
+        if (cellKey != null && cellKey == -1L)
+            members = membersRepository.findAllByOrderByMemberNameAsc();
+        else {
+            if (cellKey == null)
+                return Collections.emptyList();
+            members = getCellMembersByCellKey(cellKey);
+        }
+
+        if (members == null || members.isEmpty())
             return Collections.emptyList();
+
+        // 2) 기간 내 주일 리스트
+        List<LocalDate> sundays = getSundaysBetween(startDate, endDate);
+        if (sundays.isEmpty()) {
+            // 기간 안에 주일이 하나도 없으면 모든 값이 0인 row 반환
+            Map<Long, AttendanceStatsItemDto> emptyMap = new LinkedHashMap<>();
+            for (Members m : members) {
+                AttendanceStatsItemDto dto = new AttendanceStatsItemDto();
+                dto.setMemberId(m.getId());
+                dto.setMemberName(m.getMemberName());
+                dto.setAbsentCount(0);
+                dto.setWorshipCount(0);
+                dto.setCellCount(0);
+                emptyMap.put(m.getId(), dto);
+            }
+            return new ArrayList<>(emptyMap.values());
+        }
 
         List<Long> memberIds = members.stream()
                 .map(Members::getId)
                 .collect(Collectors.toList());
 
-        // 2) 기간 내 출석 데이터 조회
+        // 3) 기간 내 출석 데이터 조회 (일단 전체 가져온 뒤, 주일만 필터)
         List<Attendances> attendanceList =
-                attendancesRepository.findByAttendanceDateBetweenAndMemberIdIn(
-                        startDate, endDate, memberIds
-                );
+                attendancesRepository.findByAttendanceDateBetweenAndMemberIdIn(startDate, endDate, memberIds);
 
-        // 3) 기본 row (출석 데이터 없어도 0으로 보이게)
+        // 4) 기본 row (출석 데이터 없어도 0으로 보이게)
         Map<Long, AttendanceStatsItemDto> map = new LinkedHashMap<>();
         for (Members m : members) {
             AttendanceStatsItemDto dto = new AttendanceStatsItemDto();
@@ -255,28 +280,84 @@ public class AttendanceService {
             map.put(m.getId(), dto);
         }
 
-        // 4) 집계 규칙
-        //    1) worship=true, cell=true  → 셀모임 +1
-        //    2) worship=true, cell=false → 예배 +1
-        //    3) worship=false, cell=true → 셀모임 +1
-        //    4) 둘 다 false             → 결석 +1
+        // 5) 멤버별 + 날짜별 출석을 빠르게 찾기 위한 맵 구성
+        //    memberId -> (date -> Attendances)
+        Map<Long, Map<LocalDate, Attendances>> attendMapByMember = new HashMap<>();
         for (Attendances a : attendanceList) {
-            AttendanceStatsItemDto dto = map.get(a.getMemberId());
+            LocalDate date = a.getAttendanceDate();
+            // 주일만 통계에 포함
+            if (!sundays.contains(date))
+                continue;
+
+            attendMapByMember
+                    .computeIfAbsent(a.getMemberId(), k -> new HashMap<>())
+                    .put(date, a);
+        }
+
+        // 6) 주일 기준으로 통계 집계
+        for (Members m : members) {
+            Long memberId = m.getId();
+            AttendanceStatsItemDto dto = map.get(memberId);
             if (dto == null)
                 continue;
 
-            boolean w = a.isWorshipStatus();
-            boolean c = a.isCellStatus();
+            Map<LocalDate, Attendances> byDateMap = attendMapByMember.getOrDefault(memberId, Collections.emptyMap());
 
-            if (c) {
-                dto.setCellCount(dto.getCellCount() + 1);
-            } else if (w) {
-                dto.setWorshipCount(dto.getWorshipCount() + 1);
-            } else {
-                dto.setAbsentCount(dto.getAbsentCount() + 1);
+            for (LocalDate sunday : sundays) {
+                Attendances a = byDateMap.get(sunday);
+
+                // 출석 row 자체가 없으면 → 결석
+                if (a == null) {
+                    dto.setAbsentCount(dto.getAbsentCount() + 1);
+                    continue;
+                }
+
+                // 출결 규칙
+                // 1) worship=true, cell=true  → 셀모임 +1
+                // 2) worship=true, cell=false → 예배 +1
+                // 3) worship=false, cell=true → 셀모임 +1
+                // 4) 둘 다 false             → 결석 +1
+                if (a.isCellStatus())
+                    dto.setCellCount(dto.getCellCount() + 1);
+                else if (a.isWorshipStatus())
+                    dto.setWorshipCount(dto.getWorshipCount() + 1);
+                else
+                    dto.setAbsentCount(dto.getAbsentCount() + 1);
             }
         }
 
         return new ArrayList<>(map.values());
     }
+
+    private List<LocalDate> getSundaysBetween(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null || startDate.isAfter(endDate))
+            return Collections.emptyList();
+
+        List<LocalDate> sundays = new ArrayList<>();
+
+        // 시작일 기준으로 첫 번째 주일 찾기
+        LocalDate cursor = startDate;
+        while (cursor.getDayOfWeek() != java.time.DayOfWeek.SUNDAY) {
+            cursor = cursor.plusDays(1);
+            // 기간 안에 주일이 하나도 없는 경우
+            if (cursor.isAfter(endDate))
+                return Collections.emptyList();
+        }
+
+        // 첫 주일부터 1주일 간격으로 endDate까지 추가
+        while (!cursor.isAfter(endDate)) {
+            sundays.add(cursor);
+            cursor = cursor.plusWeeks(1);
+        }
+
+        return sundays;
+    }
+
+    /**
+     * 임원용: 전체 멤버 조회
+     */
+    public List<Members> getAllMembersForAdmin() {
+        return membersRepository.findAllByOrderByMemberNameAsc();
+    }
+
 }

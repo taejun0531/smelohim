@@ -32,7 +32,15 @@
     </div>
 
     <div class="cell-selector-grid">
-        <!-- cellList: { cellKey(리더 member.id), cellName } 목록 -->
+        <!-- "전체" 버튼 (항상 표시) -->
+        <button type="button"
+                class="cell-card cell-all active"
+                data-cell-key="ALL"
+                data-cell-name="전체">
+            전체
+        </button>
+
+        <!-- 개별 셀 버튼들 -->
         <button type="button"
                 class="cell-card"
                 th:each="cell : ${cellList}"
@@ -42,6 +50,7 @@
             태준셀
         </button>
 
+        <!-- 셀이 아예 없을 때만 안내 문구 -->
         <div class="cell-empty-message"
              th:if="${#lists.isEmpty(cellList)}">
             등록된 셀이 없습니다. 셀 정보를 먼저 등록해주세요.
