@@ -78,10 +78,8 @@ function findMember(element){
         alert("검색할 카테고리를 한 가지만 입력해주세요.");
         return;
     }
-    if(findCnt === 0){
-        alert("검색할 내용을 입력해주세요.");
-        return;
-    }
+    if(findCnt === 0)
+        findCategory = "ALL";
 
     fetch("/admin/personalDataPage", {
         method: "POST",
@@ -465,8 +463,10 @@ async function createMember(element) {
 
     if (cellInfoEl) {
         cellKey = n(cellInfoEl.value); // 선택된 ID
-        const selectedOption = cellInfoEl.options[cellInfoEl.selectedIndex];
-        cellName = selectedOption ? n(selectedOption.textContent) : null;
+        if (cellKey != null && cellKey !== ''){
+            const selectedOption = cellInfoEl.options[cellInfoEl.selectedIndex];
+            cellName = selectedOption ? n(selectedOption.textContent) : null;
+        }
     }
 
     // === 필수 입력 → 이름만 체크
@@ -539,10 +539,8 @@ async function createMember(element) {
 function addYearSuffix(v) {
     const s = n(v);               // null → "" 정리
     if (s === "") return null;    // 비어있으면 null
-    return s + "년";              // 값 있으면 "2023년"
+    return s;              // 값 있으면 "2023"
 }
-
-
 
 function memberPopup(element){
     const URL = "../admin/memberDetailsPage?memberId=" + element.id;

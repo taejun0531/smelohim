@@ -162,27 +162,27 @@ body.dark table tr:first-child th{
 }
 
 /* 필터 테이블(첫 번째) 셀/컨트롤 */
-table:first-of-type td{
+.memberHeader td{
     padding:10px 12px; vertical-align:middle; border-bottom:1px solid var(--border);
 }
-table:first-of-type input[type="text"],
-table:first-of-type input[type="number"],
-table:first-of-type select{
+.memberHeader input[type="text"],
+.memberHeader input[type="number"],
+.memberHeader select{
     width:100%; height:36px; padding:6px 10px;
     border:1px solid var(--border); border-radius:10px;
     background:#fff; color:var(--text); outline:none;
     transition:border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
 }
-body.dark table:first-of-type input[type="text"],
-body.dark table:first-of-type input[type="number"],
-body.dark table:first-of-type select{
+body.dark .memberHeader input[type="text"],
+body.dark .memberHeader input[type="number"],
+body.dark .memberHeader select{
     background:#122821; color:#edfff7;
     border-color:#2a4a3e;
 }
-table:first-of-type input::placeholder{ color:var(--placeholder); opacity:.8; }
-body.dark table:first-of-type input::placeholder{ color:#a4dfcd; opacity:.95; }
-table:first-of-type input:focus,
-table:first-of-type select:focus{
+.memberHeader input::placeholder{ color:var(--placeholder); opacity:.8; }
+body.dark .memberHeader input::placeholder{ color:#a4dfcd; opacity:.95; }
+.memberHeader input:focus,
+.memberHeader select:focus{
     border-color:rgba(var(--ring), .55);
     box-shadow:0 0 0 4px rgba(var(--ring), .20);
 }
@@ -197,36 +197,67 @@ table:first-of-type select:focus{
 /* 총원 라벨: 컴팩트 칩 */
 #memberTotalSize{
     display:block; width:min(1080px,96vw); margin:8px auto 2px;
-    font-size:12px; font-weight:800; color:var(--subtle);
+    font-size:13px; font-weight:800; color:var(--subtle);
     background:var(--brand-weak); border:1px solid var(--border);
     border-radius:999px; padding:5px 10px; text-align:left;
 }
 
 /* 결과 테이블(두 번째) */
-table:nth-of-type(2) tr th,
-table:nth-of-type(2) tr td{
+.memberList tr th,
+.memberList tr td{
     padding:10px 12px; border-bottom:1px solid var(--border);
     color:var(--text);
 }
-table:nth-of-type(2) tr:nth-child(even) td{ background:rgba(34,197,94,.03); }
-table:nth-of-type(2) tr:hover td{ background:rgba(34,197,94,.08); }
-body.dark table:nth-of-type(2) tr:nth-child(even) td{ background:rgba(41,211,106,.10); }
+.memberList tr:nth-child(even) td{ background:rgba(34,197,94,.03); }
+.memberList tr:hover td{ background:rgba(34,197,94,.08); }
+body.dark .memberList tr:nth-child(even) td{ background:rgba(41,211,106,.10); }
+
+/* memberList 컬럼 비율 고정 (번호 / 이름 / 생년월일 / 전화번호 / 셀 정보 / 세례 / 양육 / 성장) */
+.memberList{
+    table-layout: fixed;
+
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+}
+.memberList th:nth-child(1),
+.memberList td:nth-child(1){ width:10%; }
+.memberList th:nth-child(2),
+.memberList td:nth-child(2){ width:12%; }
+.memberList th:nth-child(3),
+.memberList td:nth-child(3){ width:14%; }
+.memberList th:nth-child(4),
+.memberList td:nth-child(4){ width:16%; }
+.memberList th:nth-child(5),
+.memberList td:nth-child(5){ width:12%; }
+.memberList th:nth-child(6),
+.memberList td:nth-child(6){ width:10%; }
+.memberList th:nth-child(7),
+.memberList td:nth-child(7){ width:14%; }
+.memberList th:nth-child(8),
+.memberList td:nth-child(8){ width:15%; }
+
+/* 셀 정보 입력 칸 최소 너비 (추가 행에서 잘리지 않도록) */
+#newMemberRow td:nth-child(5){
+    min-width:130px;
+}
 
 /* 정렬 가능한 헤더: 포인터/아이콘 공간 */
-table:nth-of-type(2) tr th[onclick]{
+.memberList tr th[onclick]{
     user-select:none; cursor:pointer; position:relative;
     padding-right:22px; transition:color .15s ease;
 }
-table:nth-of-type(2) tr th[onclick]:hover{ color:var(--brand-dark); }
+.memberList tr th[onclick]:hover{ color:var(--brand-dark); }
 
 /* 정렬 방향 아이콘(▲/▼) */
-table:nth-of-type(2) tr th[onclick].sorted::after{
+.memberList tr th[onclick].sorted::after{
     content: attr(data-sort);
     position:absolute; right:8px; top:50%; transform:translateY(-50%);
     font-size:12px; color:var(--brand-dark);
 }
-table:nth-of-type(2) tr th[onclick][data-sort="asc"].sorted::after{ content:"▲"; }
-table:nth-of-type(2) tr th[onclick][data-sort="desc"].sorted::after{ content:"▼"; }
+.memberList tr th[onclick][data-sort="asc"].sorted::after{ content:"▲"; }
+.memberList tr th[onclick][data-sort="desc"].sorted::after{ content:"▼"; }
 
 /* 팝업 가능한 이름 셀 힌트 */
 #memberTable td[onclick^="memberPopup"]{
@@ -234,6 +265,78 @@ table:nth-of-type(2) tr th[onclick][data-sort="desc"].sorted::after{ content:"�
 }
 #memberTable td[onclick^="memberPopup"]:hover{
     text-decoration:underline; color:var(--brand-dark);
+}
+
+/* ==== 청년 리스트 카드 + 내부 스크롤 =============================== */
+
+/* 카드 박스 (스크롤 X, 단순 카드 역할) */
+.memberListWrapper{
+    width:min(1080px,96vw);
+    margin:12px auto;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+}
+
+/* 헤더/바디 폭 맞추기 */
+.memberList thead{
+    display:table;
+    width:100%;
+    table-layout:fixed;
+}
+
+/* tbody만 스크롤 */
+#memberTable{
+    display:block;
+    max-height:50vh;
+    overflow-y:auto;
+    overflow-x:hidden;
+
+    scrollbar-width: thin; /* 기본보다 얇게 */
+    scrollbar-color: rgba(34,197,94,.45) transparent; /* thumb / track */
+}
+
+/* tbody 안 tr을 다시 table처럼 */
+#memberTable tr{
+    display:table;
+    width:100%;
+    table-layout:fixed;
+}
+
+/* 첫 데이터 행 위쪽 선 제거 (선이 두 줄처럼 보일 때만 사용) */
+#memberTable tr:first-child td{
+    border-top: none;
+}
+
+/* WebKit 계열(Chrome, Edge, Safari)용 스크롤 커스텀 */
+#memberTable::-webkit-scrollbar{
+    width: 10px;
+}
+#memberTable::-webkit-scrollbar-track{
+    background: transparent;
+    margin: 6px 0;
+}
+#memberTable::-webkit-scrollbar-thumb{
+    background: rgba(34,197,94,.45);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+#memberTable::-webkit-scrollbar-thumb:hover{
+    background: rgba(34,197,94,.75);
+}
+
+/* 다크 모드에서 스크롤 색 */
+body.dark #memberTable{
+    scrollbar-color: rgba(41,211,106,.8) transparent;
+}
+body.dark #memberTable::-webkit-scrollbar-thumb{
+    background: rgba(41,211,106,.8);
+}
+body.dark #memberTable::-webkit-scrollbar-thumb:hover{
+    background: rgba(41,211,106,1);
 }
 
 /* 반응형 */
@@ -253,9 +356,9 @@ table:nth-of-type(2) tr th[onclick][data-sort="desc"].sorted::after{ content:"�
     border-radius: 999px;
     font-weight: 900;
     font-size: 13px;
+    padding: 0 12px;
     cursor: pointer;
 
-    /* 검색 버튼과 동일한 초록 계열 */
     background: linear-gradient(180deg, var(--brand), var(--brand-dark));
     color: #fff;
     box-shadow: 0 8px 18px rgba(var(--ring), .26);
@@ -279,7 +382,6 @@ body.dark #addMemberBtn {
 #memberTable td:first-child {
     text-align: center;
     font-weight: 700;
-    width: 50px; /* 번호 칸 고정 너비 */
 }
 
 /* ==== 청년 추가 입력 행 전체 스타일 ==================================== */
@@ -294,9 +396,9 @@ body.dark #newMemberRow td {
     background: rgba(41,211,106,.14);
 }
 
-/* 첫 번째 칸(청년 저장 버튼)만 살짝 넓게 */
+/* 첫 번째 칸(청년 저장 버튼) */
 #newMemberRow td:first-child {
-    width: 110px;
+    max-width: 120px;
     text-align: center;
 }
 
@@ -350,7 +452,7 @@ body.dark #newMemberRow input::placeholder {
     position: relative;
     width: 100%;
     height: 34px;
-    padding: 6px 34px 6px 10px; /* 오른쪽에 아이콘 자리 확보 */
+    padding: 6px 34px 6px 10px;
     border-radius: 10px;
     border: 1px solid var(--border);
     background: #ffffff;
@@ -388,7 +490,7 @@ body.dark #newMemberRow input[type="date"] {
     border: none;
     border-radius: 999px;
     font-weight: 900;
-    font-size: 12px;
+    font-size: 13px;
     cursor: pointer;
 
     background: linear-gradient(180deg, var(--brand), var(--brand-dark));
@@ -428,11 +530,11 @@ body.dark #newMemberRow input[type="date"] {
 
 /* ==== 공통 Select 통합 디자인 ========================================= */
 /* 라이트 버전 */
-table:first-of-type select,
+.memberHeader select,
 #newMemberRow select{
     width: 100%;
     height: 34px;
-    padding: 6px 28px 6px 10px;   /* 오른쪽 화살표 자리 확보 */
+    padding: 6px 28px 6px 10px;
     border-radius: 10px;
     border: 1px solid var(--border);
     background-color: #ffffff;
@@ -445,7 +547,6 @@ table:first-of-type select,
     -moz-appearance: none;
     appearance: none;
 
-    /* 커스텀 화살표 */
     background-image:
             linear-gradient(45deg, transparent 50%, var(--placeholder) 50%),
             linear-gradient(135deg, var(--placeholder) 50%, transparent 50%);
@@ -462,7 +563,7 @@ table:first-of-type select,
 }
 
 /* 다크 버전 */
-body.dark table:first-of-type select,
+body.dark .memberHeader select,
 body.dark #newMemberRow select{
     background-color: #122821;
     border-color: #2a4a3e;
@@ -474,30 +575,30 @@ body.dark #newMemberRow select{
 }
 
 /* 포커스 공통 효과 */
-table:first-of-type select:focus,
+.memberHeader select:focus,
 #newMemberRow select:focus{
     border-color: rgba(var(--ring), .55);
     box-shadow: 0 0 0 3px rgba(var(--ring), .20);
 }
 
 /* 옵션 색상(라이트/다크) */
-table:first-of-type select option,
+.memberHeader select option,
 #newMemberRow select option{
     background-color: var(--card);
     color: var(--text);
 }
-table:first-of-type select option:checked,
+.memberHeader select option:checked,
 #newMemberRow select option:checked{
     background-color: rgba(34,197,94,.12);
     color: var(--brand-dark);
 }
 
-body.dark table:first-of-type select option,
+body.dark .memberHeader select option,
 body.dark #newMemberRow select option{
     background-color: #122821;
     color: #edfff7;
 }
-body.dark table:first-of-type select option:checked,
+body.dark .memberHeader select option:checked,
 body.dark #newMemberRow select option:checked{
     background-color: rgba(41,211,106,.35);
     color: #eafff4;

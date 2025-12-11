@@ -159,8 +159,7 @@
                                min="1900" max="2999" step="1"
                                disabled
                                th:value="${member.nurtureYear != null && member.nurtureYear.length() > 0
-                                          ? member.nurtureYear.substring(0, member.nurtureYear.length() - 1)
-                                          : ''}">
+                                          ? member.nurtureYear : ''}">
                     </div>
                 </label>
                 <label class="field">
@@ -194,8 +193,7 @@
                                min="1900" max="2999" step="1"
                                disabled
                                th:value="${member.growthYear != null && member.growthYear.length() > 0
-                                          ? member.growthYear.substring(0, member.growthYear.length() - 1)
-                                          : ''}">
+                                          ? member.growthYear : ''}">
                     </div>
                 </label>
                 <label class="field">
@@ -235,7 +233,7 @@
                             <option th:each="leader : ${cellLeaderList}"
                                     th:value="${leader.cellName}"
                                     th:selected="${member.cellName} == ${leader.cellName}"
-                                    th:text="${leader.memberName} + ' (' + ${leader.cellName} + ')'"
+                                    th:text="${leader.cellName} + ' (' + ${leader.memberName} + ')'"
                                     th:id="${leader.id}">
                             </option>
                         </select>

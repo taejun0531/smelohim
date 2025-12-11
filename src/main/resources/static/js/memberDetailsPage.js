@@ -218,10 +218,10 @@
             // 예배/셀 빈도는 이 페이지에서 편집하지 않으므로 제외(나중에 연동)
             cellLeaderStatus: cellLeaderStatusChecked,
 
-            nurtureYear: ((y) => y == null ? null : y + '년')(intOrNull(fd.get('nurtureYear'))),           // 1900~2999
+            nurtureYear: ((y) => y == null ? null : String(y))(intOrNull(fd.get('nurtureYear'))),           // 1900~2999
             nurtureSemester: strOrNull(fd.get('nurtureSemester')),   // '상반기' | '하반기' | null
 
-            growthYear: ((y) => y == null ? null : y + '년')(intOrNull(fd.get('growthYear'))),
+            growthYear: ((y) => y == null ? null : String(y))(intOrNull(fd.get('growthYear'))),
             growthSemester: strOrNull(fd.get('growthSemester')),
 
             cellKey: intOrNull(cellKeyValue),
