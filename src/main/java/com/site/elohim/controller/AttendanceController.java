@@ -55,7 +55,7 @@ public class AttendanceController {
         }
 
         try {
-            attendanceService.updateAttendanceItems(request.getItems());
+            attendanceService.updateAttendanceItemsAndUpdateMemberFrequency(request.getItems());
             log.info("[Attendance-USER] successfully updated attendance. userId={}, itemCount={}",
                     loginUserId, request.getItems().size());
             return true;
@@ -77,12 +77,9 @@ public class AttendanceController {
     public Map<Long, AttendanceItemDto> loadAttendance(@RequestBody AttendanceLoadRequest request,
                                                        @AuthenticationPrincipal UserDetails user) {
 
-        if (request == null ||
-                request.getAttendanceDate() == null ||
-                request.getAttendingMemberIdList() == null ||
-                request.getAttendingMemberIdList().isEmpty()) {
+        if (request == null || request.getAttendanceDate() == null ||
+                request.getAttendingMemberIdList() == null || request.getAttendingMemberIdList().isEmpty())
             return Collections.emptyMap();
-        }
 
         String loginUserId = user.getUsername();
 
@@ -143,7 +140,7 @@ public class AttendanceController {
         }
 
         try {
-            attendanceService.updateAttendanceItems(request.getItems());
+            attendanceService.updateAttendanceItemsAndUpdateMemberFrequency(request.getItems());
             log.info("[Attendance-ADMIN] successfully updated attendance. itemCount={}",
                     request.getItems().size());
             return true;

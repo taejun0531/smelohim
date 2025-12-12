@@ -123,4 +123,19 @@ public interface MembersRepository extends JpaRepository<Members, Long> {
         order by m.memberName asc
         """)
     List<Members> findMembersByLeaderUserId(@Param("loginuser_PkId") Long loginuser_PkId);
+
+    // ===== 예배, 셀모임 빈도 문자열(비율)만 업데이트 =====
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        update Members m
+           set m.baptismStatus = :baptismStatus,
+               m.worshipStatus = :worshipStatus
+         where m.id = :memberId
+        """)
+    void updateAttendanceFrequencyById(
+            @Param("memberId") Long memberId,
+            @Param("baptismStatus") String baptismStatus,
+            @Param("worshipStatus") String worshipStatus
+    );
+
 }

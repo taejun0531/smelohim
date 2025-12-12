@@ -18,9 +18,6 @@
     const baptismText   = document.getElementById('baptismText');
     const baptismSelect = document.getElementById('baptismSelect');
 
-    const refreshWorshipBtn = document.getElementById('refreshWorshipBtn');
-    const refreshCellBtn    = document.getElementById('refreshCellBtn');
-
     // 리더 여부
     const leaderCheckbox = document.getElementById('cellLeaderStatus');
 
@@ -42,15 +39,6 @@
 
     // 모든 입력(hidden 제외)
     const inputsAll = form.querySelectorAll('input, textarea, select');
-
-    // --- 더미 액션(나중에 API 연결 예정) ---
-    refreshWorshipBtn?.addEventListener('click', () => {
-        console.log(collectUpdatePayload());
-        alert('예배 빈도 갱신 요청은 나중에 연결됩니다.');
-    });
-    refreshCellBtn?.addEventListener('click', () => {
-        alert('셀모임 빈도 갱신 요청은 나중에 연결됩니다.');
-    });
 
     // --- 초기 선택값 동기화 ---
     // 세례 셀렉트: 읽기 텍스트(DB 값)와 동일한 옵션을 선택

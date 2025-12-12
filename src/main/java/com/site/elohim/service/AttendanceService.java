@@ -13,6 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -359,5 +362,181 @@ public class AttendanceService {
     public List<Members> getAllMembersForAdmin() {
         return membersRepository.findAllByOrderByMemberNameAsc();
     }
+
+
+
+
+    // ============================== 예배, 셀모임 빈도 서비스 ==============================
+    /**
+     * 출석 저장 완료 후, 변경된 멤버들의 예배, 셀모임 빈도 문자열을 members에 반영
+     * - baptismStatus : 예배 비율(예배 or 셀 출석이면 출석 인정)
+     * - worshipStatus : 셀모임 비율(셀 출석 true 기준)
+     * - 저장 포맷: "올해비율 작년비율" (예: "87.2 97.0")
+     */
+    @Transactional
+    public void updateAttendanceItemsAndUpdateMemberFrequency(List<AttendanceItemDto> items) {
+
+        if (items == null || items.isEmpty())
+            return;
+
+        // 1) 변경된 memberId만(중복 제거) 수집
+        List<Long> changedMemberIds = extractChangedMemberIds(items);
+
+
+        // 주일이 아닌 날짜만 들어온 케이스는 저장 X
+        if (changedMemberIds.isEmpty())
+            return;
+
+        // 2) 출석 업서트 먼저 수행
+        updateAttendanceItems(items);
+
+        // 3) 올해/작년 기간 계산
+        LocalDate today = LocalDate.now();
+
+        YearWindow thisYear = YearWindow.thisYearUntil(today);
+        YearWindow lastYear = YearWindow.lastYearFull(today);
+
+        // 4) 분모(주일 개수)
+        long thisSundayCount = countSundays(thisYear.start, thisYear.end);
+        long lastSundayCount = countSundays(lastYear.start, lastYear.end);
+
+        // 5) DB 집계(올해/작년 각각 1번씩)
+        Map<Long, AggCount> thisAgg = loadAggMap(thisYear.start, thisYear.end, changedMemberIds);
+        Map<Long, AggCount> lastAgg = loadAggMap(lastYear.start, lastYear.end, changedMemberIds);
+
+        // 6) 멤버별 문자열 생성 후 업데이트(멤버 수만큼)
+        for (Long memberId : changedMemberIds) {
+
+            AggCount t = thisAgg.getOrDefault(memberId, AggCount.ZERO);
+            AggCount l = lastAgg.getOrDefault(memberId, AggCount.ZERO);
+
+            String baptismStatusValue = ratioString(t.attendCount, thisSundayCount, l.attendCount, lastSundayCount);
+            String worshipStatusValue = ratioString(t.cellCount,   thisSundayCount, l.cellCount,   lastSundayCount);
+
+            membersRepository.updateAttendanceFrequencyById(memberId, baptismStatusValue, worshipStatusValue);
+        }
+    }
+
+    // ====================== 아래부터는 “유틸” ======================
+
+    private List<Long> extractChangedMemberIds(List<AttendanceItemDto> items) {
+
+        Set<Long> set = new LinkedHashSet<>();
+
+        for (AttendanceItemDto dto : items) {
+            if (dto == null || dto.getMemberId() == null || dto.getAttendanceDate() == null)
+                continue;
+
+            // 주일만 대상(요구사항: 주일 기준 집계)
+            if (dto.getAttendanceDate().getDayOfWeek() != DayOfWeek.SUNDAY)
+                continue;
+
+            set.add(dto.getMemberId());
+        }
+
+        return new ArrayList<>(set);
+    }
+
+    private Map<Long, AggCount> loadAggMap(LocalDate start, LocalDate end, List<Long> memberIds) {
+
+        if (start == null || end == null || memberIds == null || memberIds.isEmpty())
+            return Collections.emptyMap();
+
+        List<AttendancesRepository.AttendanceAgg> rows =
+                attendancesRepository.aggregateAttendance(start, end, memberIds);
+
+        Map<Long, AggCount> map = new HashMap<>();
+
+        for (AttendancesRepository.AttendanceAgg r : rows) {
+            Long memberId = r.getMemberId();
+            if (memberId == null) continue;
+
+            long attend = (r.getAttendCount() == null) ? 0 : r.getAttendCount();
+            long cell   = (r.getCellCount() == null) ? 0 : r.getCellCount();
+
+            map.put(memberId, new AggCount(attend, cell));
+        }
+
+        return map;
+    }
+
+    private long countSundays(LocalDate start, LocalDate end) {
+
+        if (start == null || end == null || start.isAfter(end))
+            return 0;
+
+        LocalDate cursor = start;
+
+        // 첫 일요일까지 이동
+        while (cursor.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            cursor = cursor.plusDays(1);
+            if (cursor.isAfter(end))
+                return 0;
+        }
+
+        long count = 0;
+        while (!cursor.isAfter(end)) {
+            count++;
+            cursor = cursor.plusWeeks(1);
+        }
+
+        return count;
+    }
+
+    /**
+     * (분자/분모)*100 을 소수점 1자리로 만든 후
+     * "올해 작년" 문자열로 합침
+     */
+    private String ratioString(long thisNumerator, long thisDenominator,
+                               long lastNumerator, long lastDenominator) {
+
+        BigDecimal thisRatio = percentOneDecimal(thisNumerator, thisDenominator);
+        BigDecimal lastRatio = percentOneDecimal(lastNumerator, lastDenominator);
+
+        return thisRatio.toPlainString() + " " + lastRatio.toPlainString();
+    }
+
+    private BigDecimal percentOneDecimal(long numerator, long denominator) {
+
+        if (denominator <= 0)
+            return BigDecimal.ZERO.setScale(1, RoundingMode.HALF_UP);
+
+        return BigDecimal.valueOf(numerator)
+                .multiply(BigDecimal.valueOf(100))
+                .divide(BigDecimal.valueOf(denominator), 1, RoundingMode.HALF_UP);
+    }
+
+    private static class AggCount {
+        final long attendCount; // worship OR cell
+        final long cellCount;   // cell only
+
+        static final AggCount ZERO = new AggCount(0, 0);
+
+        AggCount(long attendCount, long cellCount) {
+            this.attendCount = attendCount;
+            this.cellCount = cellCount;
+        }
+    }
+
+    private static class YearWindow {
+        final LocalDate start;
+        final LocalDate end;
+
+        private YearWindow(LocalDate start, LocalDate end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        static YearWindow thisYearUntil(LocalDate today) {
+            int y = today.getYear();
+            return new YearWindow(LocalDate.of(y, 1, 1), today);
+        }
+
+        static YearWindow lastYearFull(LocalDate today) {
+            int y = today.getYear() - 1;
+            return new YearWindow(LocalDate.of(y, 1, 1), LocalDate.of(y, 12, 31));
+        }
+    }
+
 
 }
